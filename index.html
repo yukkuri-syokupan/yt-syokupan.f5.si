@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>しょくぱん</title>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f4f6f8 0%, #eef1f5 100%);
+            background-attachment: fixed;
+            position: relative;
+            color: #55504c;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.35;
+        }
+        body::before {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #e0eafd 0%, rgba(255,255,255,0) 70%);
+            top: 5%;
+            left: -10%;
+        }
+        body::after {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, #fff3e0 0%, rgba(255,255,255,0) 70%);
+            bottom: 10%;
+            right: -10%;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 640px;
+            padding: 80px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; 
+        }
+
+        .glass-board {
+            width: 100%;
+            padding: 60px 45px;
+            border-radius: 32px;
+            
+            background: rgba(255, 255, 255, 0.35);
+            
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.02),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            
+            transition: transform 0.5s cubic-bezier(0.1, 0.8, 0.2, 1), 
+                        background 0.5s ease;
+        }
+
+        .glass-board:hover {
+            background: rgba(255, 255, 255, 0.45);
+            transform: translateY(-2px);
+        }
+
+        .header-zone {
+            text-align: center;
+        }
+
+        .brand-name {
+            font-size: 2.2rem;
+            font-weight: 300;
+            letter-spacing: 0.25em;
+            color: #443f3b;
+            margin-bottom: 12px;
+            padding-left: 0.25em;
+        }
+
+        .brand-sub {
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            color: #999490;
+            text-transform: uppercase;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.7), transparent);
+            margin: 40px 0;
+        }
+
+        .introduction {
+            font-size: 0.95rem;
+            line-height: 2.3;
+            color: #5c5753;
+            letter-spacing: 0.08em;
+            text-align: justify;
+            text-justify: inter-ideograph;
+            font-weight: 300;
+        }
+
+        .introduction p {
+            margin-bottom: 1.8rem;
+        }
+        .introduction p:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            margin-bottom: 24px;
+            color: #443f3b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .activity-text {
+            font-size: 0.9rem;
+            line-height: 2;
+            color: #66615d;
+            font-weight: 300;
+            margin-bottom: 28px;
+        }
+
+        .glass-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 36px;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            color: #55504c;
+            font-size: 0.85rem;
+            font-weight: 400;
+            text-decoration: none;
+            letter-spacing: 0.08em;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 1);
+            color: #332f2c;
+            transform: scale(1.02) translateY(-1px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02);
+        }
+
+        .scroll-down {
+            text-align: center;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            color: #aaa5a1;
+            margin-top: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(6px); }
+            60% { transform: translateY(3px); }
+        }
+
+        @media (max-width: 480px) {
+            .wrapper { padding: 40px 16px; }
+            .glass-board { padding: 40px 24px; }
+            .introduction { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        
+        <div class="glass-board header-zone">
+            <h1 class="brand-name">しょくぱん</h1>
+            <p class="brand-sub">Scratcher & YouTuber</p>
+            
+            <div class="divider"></div>
+
+            <div class="introduction">
+                <p>
+                    ScratchおよびYouTubeで活動するクリエイター（？）<br>
+                    ゲームやアニメーションなど、「誰もが楽しめる作品づくり」をテーマに活動しています。
+                </p>
+                <p>
+                    「しょくぱん」という名前のように、焦げないようにします（？）                </p>
+            </div>
+            
+            <div class="scroll-down">▽ Scroll</div>
+        </div>
+
+        <div class="glass-board">
+            <h2 class="section-title">Scratch</h2>
+            <p class="activity-text">
+                自由気ままに投稿してます。良ければご覧ください。（ほぼ使ってない）
+            </p>
+            <a href="https://scratch.mit.edu/users/yukkuri_syokupan/" class="glass-btn" target="_blank">作品を見に行く</a>
+        </div>
+
+        <div class="glass-board">
+            <h2 class="section-title">YouTube</h2>
+            <p class="activity-text">
+                不定期投稿です。たまーに投稿します。良ければご覧ください。            </p>
+            <a href="https://www.youtube.com/@%E3%82%86%E3%81%A3%E3%81%8F%E3%82%8A%E3%81%97%E3%82%87%E3%81%8F%E3%81%B1%E3%82%93" class="glass-btn" target="_blank">動画を見に行く</a>
+        </div>
+
+        <div class="glass-board">
+            <h2 class="section-title">Discord</h2>
+            <p class="activity-text">
+                公式Discordサーバーです。……うん。それだけ。           </p>
+            <a href="https://discord.gg/Gd6s7rgPKr" class="glass-btn" target="_blank">Discordに参加</a>
+        </div>
+
+    </div>
+
+</body>
+</html>
