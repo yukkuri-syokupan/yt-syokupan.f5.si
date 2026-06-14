@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>しょくぱん</title>
+    
+    <!-- 🍞 ファビコンの設定 -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
     <style>
         html {
             scroll-behavior: smooth;
@@ -68,7 +72,6 @@
             border-radius: 32px;
             
             background: rgba(255, 255, 255, 0.35);
-            
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             
@@ -188,6 +191,75 @@
             animation: bounce 2s infinite;
         }
 
+        /* 🤝 相互リンク（メッセージ＋アイコン対応版） */
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .mutual-link-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 24px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .mutual-link-card:hover {
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transform: translateX(4px); /* 横にそっとスライドする心地よいホバー */
+        }
+
+        /* 相手のアイコン・ファビコン枠 */
+        .link-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.01);
+        }
+
+        .link-icon-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* テキストエリア */
+        .link-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .link-name {
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: #443f3b;
+            letter-spacing: 0.05em;
+        }
+
+        .link-comment {
+            font-size: 0.8rem;
+            color: #77726e;
+            line-height: 1.5;
+            font-weight: 300;
+        }
+
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
             40% { transform: translateY(6px); }
@@ -198,6 +270,10 @@
             .wrapper { padding: 40px 16px; }
             .glass-board { padding: 40px 24px; }
             .introduction { text-align: center; }
+            .mutual-link-card {
+                padding: 16px;
+                gap: 16px;
+            }
         }
     </style>
 </head>
@@ -205,6 +281,7 @@
 
     <div class="wrapper">
         
+        <!-- メイン -->
         <div class="glass-board header-zone">
             <h1 class="brand-name">しょくぱん</h1>
             <p class="brand-sub">Scratcher & YouTuber</p>
@@ -217,12 +294,14 @@
                     ゲームやアニメーションなど、「誰もが楽しめる作品づくり」をテーマに活動しています。
                 </p>
                 <p>
-                    「しょくぱん」という名前のように、焦げないようにします（？）                </p>
+                    「しょくぱん」という名前のように、焦げないようにします（？）
+                </p>
             </div>
             
             <div class="scroll-down">▽ Scroll</div>
         </div>
 
+        <!-- Scratch -->
         <div class="glass-board">
             <h2 class="section-title">Scratch</h2>
             <p class="activity-text">
@@ -231,18 +310,57 @@
             <a href="https://scratch.mit.edu/users/yukkuri_syokupan/" class="glass-btn" target="_blank">作品を見に行く</a>
         </div>
 
+        <!-- YouTube -->
         <div class="glass-board">
             <h2 class="section-title">YouTube</h2>
             <p class="activity-text">
-                不定期投稿です。たまーに投稿します。良ければご覧ください。            </p>
+                不定期投稿です。たまーに投稿します。良ければご覧ください。
+            </p>
             <a href="https://www.youtube.com/@%E3%82%86%E3%81%A3%E3%81%8F%E3%82%8A%E3%81%97%E3%82%87%E3%81%8F%E3%81%B1%E3%82%93" class="glass-btn" target="_blank">動画を見に行く</a>
         </div>
 
+        <!-- Discord -->
         <div class="glass-board">
             <h2 class="section-title">Discord</h2>
             <p class="activity-text">
-                公式Discordサーバーです。……うん。それだけ。           </p>
+                公式Discordサーバーです。……うん。それだけ。
+            </p>
             <a href="https://discord.gg/Gd6s7rgPKr" class="glass-btn" target="_blank">Discordに参加</a>
+        </div>
+
+        <!-- 🤝 相互リンク欄（アップデート版） -->
+        <div class="glass-board">
+            <h2 class="section-title">Links</h2>
+            <p class="activity-text" style="margin-bottom: 24px;">
+                仲良しのクリエイターさんや、お世話になっているサイトです。
+            </p>
+            
+            <div class="links-list">
+                
+                <!-- リンクカード1 -->
+                <a href="https://kakeru.f5.si/" class="mutual-link-card" target="_blank">
+                    <div class="link-icon-wrapper">
+                        <!-- 相手のアイコン画像URL（またはファビコン）を入れてください -->
+                        <img src="https://kakeru.f5.si/kakeruzoku.png" alt="icon">
+                    </div>
+                    <div class="link-info">
+                        <div class="link-name">かける族</div>
+                        <div class="link-comment">Reactを使用した透き通るような見やすいウェブサイトです。</div>
+                    </div>
+                </a>
+
+                <!-- リンクカード2 -->
+                <a href="#" class="mutual-link-card" target="_blank">
+                    <div class="link-icon-wrapper">
+                        <img src="https://cdn.discordapp.com/avatars/1435557573217747014/8c4aa8bb56dd54b9d3ef74c2fae42ca5.webp?size=480" alt="icon">
+                    </div>
+                    <div class="link-info">
+                        <div class="link-name">相互リンク募集してます！</div>
+                        <div class="link-comment">DiscordのDMまで！Discord: @yukkuri_syokupan</div>
+                    </div>
+                </a>
+
+            </div>
         </div>
 
     </div>
