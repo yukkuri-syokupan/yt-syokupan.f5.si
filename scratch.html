@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scratch カスタムログイン</title>
+    <title>Scratch Auth 完全移植版</title>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f4f8; margin: 0; }
         .login-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; width: 340px; }
-        button { background: #4d97ff; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 15px; transition: background 0.2s; }
+        button { background: #4d97ff; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 15px; }
         button:hover { background: #3373cc; }
-        .status { margin-top: 15px; font-size: 14px; color: #555; word-break: break-all; min-height: 20px; }
+        .status { margin-top: 15px; font-size: 14px; color: #555; word-break: break-all; }
         .hidden { display: none; }
-        strong { color: #4d97ff; }
     </style>
 </head>
 <body>
@@ -20,7 +19,7 @@
     <h2>Scratch Auth ログイン</h2>
     
     <div id="logged-out-zone">
-        <p>Scratchアカウントを使用して安全にログインします。</p>
+        <p>Scratchアカウントでログインします。</p>
         <button id="login-btn">Scratchでログイン</button>
     </div>
 
@@ -33,16 +32,13 @@
 </div>
 
 <script>
-    const API_BASE = 'https://auth-api.itinerary.eu.org';
-    const METHOD = 'comment'; // コメント認証
+    // 【最重要】あなたがブラウザで今開いているURL（ローカルサーバー）に書き換えてください
+    const MY_SITE_URL = 'http://localhost:8000/index.html'; 
 
-    // 【重要】あなたが現在ブラウザで開いているURLと「完全に」一致させてください
-    const FIXED_URL = 'https://yt-syokupan.f5.si/scratch.html'; 
-
-    // URLを安全にBase64エンコードする処理
-    const redirectBase64 = btoa(encodeURIComponent(FIXED_URL).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+    // Pythonの def base64(string) と同じ処理
+    const base64Url = btoa(encodeURIComponent(MY_SITE_URL).replace(/%([0-9A-F]{2})/g, (match, p1) => {
         return String.fromCharCode('0x' + p1);
-    })).replace(/=/g, '');
+    }));
 
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
@@ -51,84 +47,61 @@
     const loggedInZone = document.getElementById('logged-in-zone');
     const usernameDisplay = document.getElementById('username-display');
 
-    // ----------------------------------------------------
-    // 1. [ログインボタン押下時] トークン取得と公式へのリダイレクト
-    // ----------------------------------------------------
-    loginBtn.addEventListener('click', async () => {
-        statusDiv.innerText = '認証用トークンを取得中...';
-        try {
-            const tokenUrl = `${API_BASE}/auth/getTokens?redirect=${encodeURIComponent(redirectBase64)}&method=${METHOD}`;
-            const response = await fetch(tokenUrl);
-            
-            if (!response.ok) {
-                const errText = await response.text();
-                console.error("APIエラー詳細:", errText);
-                statusDiv.innerText = `エラー: APIがステータス ${response.status} を返しました。`;
-                return;
-            }
-
-            const data = await response.json();
-            console.log("getTokens レスポンス:", data);
-
-            if (data.publicCode) {
-                statusDiv.innerText = 'Scratch Auth へ移動します...';
-                // Scratch Auth公式の認証ページへリダイレクト
-                window.location.href = `https://auth.itinerary.eu.org/auth/?id=${data.publicCode}`;
-            } else {
-                statusDiv.innerText = 'エラー: レスポンスに publicCode が含まれていません。';
-            }
-        } catch (error) {
-            console.error("通信エラー:", error);
-            statusDiv.innerText = '通信エラーが発生しました。コンソールを確認してください。';
-        }
+    // 1. ログインボタン押下時 (Pythonの /auth で未ログイン時の挙動)
+    loginBtn.addEventListener('click', () => {
+        statusDiv.innerText = 'Scratch Auth へ移動します...';
+        
+        // 提示してくれたPythonコードのURL生成をそのままJavaScriptに翻訳
+        const appName = encodeURIComponent("ScratchAuth Example");
+        const targetUrl = `https://auth.itinerary.eu.org/auth/?redirect=${base64Url}&name=${appName}`;
+        
+        // Scratch Authの公式画面へ直接ジャンプ
+        window.location.href = targetUrl;
     });
 
-    // ----------------------------------------------------
-    // 2. [ページ読み込み時] 認証戻り値の検証 ＆ セッション確認
-    // ----------------------------------------------------
+    // 2. ページ読み込み時の処理 (Pythonの /authenticate と /auth の常時チェックに相当)
     window.addEventListener('DOMContentLoaded', async () => {
-        // すでにログイン情報がブラウザに保存されているか確認
+        // すでにセッション（localStorage）に保存されているか確認
         const savedUser = localStorage.getItem('scratch_username');
         if (savedUser) {
             showLoggedIn(savedUser);
             return;
         }
 
-        // URLパラメータから Scratch Auth が付与した privateCode を取得
+        // URLの ?privateCode=xxx を取得
         const urlParams = new URLSearchParams(window.location.search);
         const privateCode = urlParams.get('privateCode');
 
         if (privateCode) {
-            statusDiv.innerText = 'Scratchアカウントを検証中...';
+            statusDiv.innerText = 'アカウントを検証中...';
             try {
-                // privateCode を使用して最終検証
-                const verifyUrl = `${API_BASE}/auth/verifyToken/${privateCode}?method=${METHOD}&redirect=${encodeURIComponent(redirectBase64)}`;
+                // Pythonの get(f"https://.../verifyToken?privateCode={code}") を再現
+                // ※渡された仕様書に合わせ、新しいAPIエンドポイントの構造で叩きます
+                const verifyUrl = `https://auth-api.itinerary.eu.org/auth/verifyToken/${privateCode}?method=comment&redirect=${encodeURIComponent(base64Url)}`;
+                
                 const response = await fetch(verifyUrl);
                 const data = await response.json();
 
-                console.log("verifyToken レスポンス:", data);
+                console.log("検証レスポンス:", data);
 
                 if (data.valid && data.username) {
-                    // 認証成功：ユーザー名を保存
+                    // 認証成功！セッションに保存
                     localStorage.setItem('scratch_username', data.username);
                     
-                    // URLから ?privateCode=xxx を消去して綺麗にする
+                    // URLをすっきりさせてログイン状態を表示
                     window.history.replaceState({}, document.title, window.location.pathname);
-                    
                     showLoggedIn(data.username);
                 } else {
-                    statusDiv.innerText = '認証に失敗しました。手順が未完了か、期限切れです。';
+                    statusDiv.innerText = '認証に失敗しました。';
                 }
             } catch (error) {
-                console.error("検証エラー:", error);
-                statusDiv.innerText = '検証通信中にエラーが発生しました。';
+                console.error(error);
+                statusDiv.innerText = '通信エラーが発生しました。';
             }
         }
     });
 
-    // ----------------------------------------------------
-    // 3. ログアウト処理
-    // ----------------------------------------------------
+    // 3. ログアウト
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('scratch_username');
         window.location.href = window.location.pathname;
@@ -138,7 +111,7 @@
         loggedOutZone.classList.add('hidden');
         loggedInZone.classList.remove('hidden');
         usernameDisplay.innerText = username;
-        statusDiv.innerText = 'ログインに成功しました！';
+        statusDiv.innerText = 'ログイン完了！';
     }
 </script>
 
