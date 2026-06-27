@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>さくひんしゅー</title>
+    <style>
+        /* noteを意識したミニマルなベース設定 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Arial, sans-serif;
+            color: #222222;
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.6;
+        }
+
+        /* ヘッダーナビゲーション */
+        header {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 32px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .logo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        header nav a {
+            color: #666666;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-left: 24px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        header nav a:hover {
+            color: #222222;
+        }
+
+        /* メインコンテナ */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* プロフィール・イントロセクション */
+        .profile-section {
+            padding: 60px 0 40px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.01em;
+        }
+
+        .profile-bio {
+            font-size: 1rem;
+            color: #555555;
+            max-width: 600px;
+            white-space: pre-line; /* 改行を有効に */
+        }
+
+        /* セクションタイトル */
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 50px 0 24px 0;
+            letter-spacing: 0.02em;
+        }
+
+        /* 作品集グリッドレイアウト */
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 24px;
+            margin-bottom: 100px;
+        }
+
+        /* 作品カードデザイン (noteの記事カードのオマージュ) */
+        .work-card {
+            background: #ffffff;
+            border: 1px solid #e9e9e9;
+            border-radius: 8px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .work-card:hover {
+            transform: translateY(-4px);
+            border-color: #cccccc;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
+        }
+
+        /* サムネイルエリア */
+        .work-image {
+            width: 100%;
+            height: 160px;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #bbbbbb;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e9e9e9;
+        }
+
+        .work-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        /* noteのカテゴリ風タグ */
+        .work-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .work-tag {
+            font-size: 0.75rem;
+            color: #666666;
+            background-color: #f4f4f4;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .work-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 8px;
+            color: #222222;
+        }
+
+        .work-desc {
+            font-size: 0.85rem;
+            color: #666666;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* 3行超えたら三点リーダーにする */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* フッター */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            font-size: 0.8rem;
+            color: #aaaaaa;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            header { padding: 24px 20px; }
+            .profile-section { padding: 40px 0 30px 0; }
+            .profile-name { font-size: 1.6rem; }
+            .works-grid { grid-template-columns: 1fr; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">さくひんしゅーのさいとべーたばん</div>
+    </header>
+
+    <div class="container">
+        <section class="profile-section">
+            <h1 class="profile-name">しょくぱん</h1>
+            <p class="profile-bio">作品集のサイト？です。まあ見ていけよ。</p>
+        </section>
+
+        <section id="works">
+            <h2 class="section-title">Works</h2>
+            <div class="works-grid">
+                
+                <a href="1.html" class="work-card">
+                    <div class="work-image">画像なんてない</div>
+                    <div class="work-info">
+                        <h3 class="work-title">おしゃれな文字</h3>
+                        <p class="work-desc">なんかおしゃれなやつ</p>
+                    </div>
+                </a>
+
+</body>
+</html>
