@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Greetings</title>
+    <style>
+        /* noteを意識したミニマルなベース設定 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Arial, sans-serif;
+            color: #222222;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrapper {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* 国名・言語ラベル */
+        .lang-label {
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #666666;
+            background-color: #f4f4f4;
+            padding: 4px 12px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+            margin-bottom: 24px;
+        }
+
+        /* タイピングエリア */
+        .greeting-display {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            min-height: 5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #text-target {
+            color: #222222;
+        }
+
+        /* シャープなカーソル */
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 3.2rem;
+            background-color: #222222;
+            margin-left: 4px;
+            animation: blink 0.8s infinite steps(1, start);
+        }
+
+        /* 日本語発音（読み方）のスタイリング */
+        .pronunciation {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #888888; /* 控えめなグレー */
+            letter-spacing: 0.1em;
+            margin-top: 16px;
+            min-height: 1.5rem;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        /* 発音が表示される時のアニメーション用クラス */
+        .pronunciation.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .border-line {
+            width: 40px;
+            height: 1px;
+            background-color: #e5e5e5;
+            margin: 40px auto 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .greeting-display {
+                font-size: 2.4rem;
+                min-height: 4rem;
+            }
+            .typing-cursor {
+                height: 2.2rem;
+            }
+            .lang-label {
+                font-size: 0.75rem;
+            }
+            .pronunciation {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="lang-label" id="lang-target">Japan</div>
+        
+        <div class="greeting-display">
+            <span id="text-target"></span><span class="typing-cursor"></span>
+        </div>
+
+        <!-- 日本語発音の表示エリア -->
+        <div class="pronunciation" id="pronunciation-target">こんにちは</div>
+
+        <div class="border-line"></div>
+    </div>
+
+    <script>
+        // 挨拶データに発音（kana）を追加
+        const greetings = [
+            { text: "こんにちは", lang: "Japan", kana: "こんにちは" },
+            { text: "Hello", lang: "United Kingdom / USA", kana: "ハロー" },
+            { text: "Bonjour", lang: "France", kana: "ボンジュール" },
+            { text: "Hola", lang: "Spain", kana: "オラ" },
+            { text: "Ciao", lang: "Italy", kana: "チャオ" },
+            { text: "Guten Tag", lang: "Germany", kana: "グーテン・ターク" },
+            { text: "안녕하세요", lang: "Korea", kana: "アンニョンハセヨ" },
+            { text: "你好", lang: "China", kana: "ニーハオ" },
+            { text: "Olá", lang: "Portugal / Brazil", kana: "オラ" },
+            { text: "Namaste", lang: "India", kana: "ナマステ" },
+            { text: "Goedendag", lang: "Netherlands", kana: "フーデンダッハ" },
+            { text: "Hej", lang: "Sweden / Denmark", kana: "ハイ" },
+            { text: "Sabaidi", lang: "Laos", kana: "サバイディー" },
+            { text: "Sawatdee", lang: "Thailand", kana: "サワディー" },
+            { text: "Xin chào", lang: "Vietnam", kana: "シンチャオ" }
+        ];
+
+        let wordIdx = 0;
+        let charIdx = 0;
+        let isDeleting = false;
+        
+        const textTarget = document.getElementById("text-target");
+        const langTarget = document.getElementById("lang-target");
+        const pronuTarget = document.getElementById("pronunciation-target");
+
+        function playTyping() {
+            const current = greetings[wordIdx];
+            const fullText = current.text;
+
+            if (isDeleting) {
+                charIdx--;
+                // 文字を消し始めたら発音もフェードアウト
+                pronuTarget.classList.remove("show");
+            } else {
+                charIdx++;
+            }
+
+            // タイピングテキスト更新
+            textTarget.textContent = fullText.substring(0, charIdx);
+            langTarget.textContent = current.lang;
+
+            let speed = isDeleting ? 40 : 110; 
+
+            if (!isDeleting && charIdx === fullText.length) {
+                // タイピングが完了したら発音をセットして表示
+                pronuTarget.textContent = current.kana;
+                pronuTarget.classList.add("show");
+
+                // 読みやすいように余韻を少し長めの3秒に設定
+                speed = 3000;
+                isDeleting = true;
+            } else if (isDeleting && charIdx === 0) {
+                isDeleting = false;
+                wordIdx = (wordIdx + 1) % greetings.length;
+                speed = 400;
+            }
+
+            setTimeout(playTyping, speed);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(playTyping, 600);
+        });
+    </script>
+</body>
+</html>
