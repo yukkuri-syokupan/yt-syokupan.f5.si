@@ -6,8 +6,8 @@
     <title>Scrabako</title>
     <style>
         :root {
-            --bg-color: #ffffff; /* 完全な白 */
-            --text-color: #000000; /* 完全な黒 */
+            --bg-color: #ffffff;
+            --text-color: #000000;
             --sub-color: #777777;
             --border-color: #e5e5e5;
         }
@@ -36,11 +36,16 @@
         h1 { 
             font-size: 32px; 
             font-weight: 700;
-            margin: 0 0 40px 0;
+            margin: 0 0 10px 0;
             letter-spacing: 0.05em;
         }
 
-        /* ソリッドな黒ボタン */
+        .page-owner {
+            font-size: 14px;
+            color: var(--sub-color);
+            margin-bottom: 40px;
+        }
+
         button { 
             background: var(--text-color); 
             color: var(--bg-color); 
@@ -55,9 +60,7 @@
             box-sizing: border-box;
         }
 
-        button:hover { 
-            opacity: 0.8;
-        }
+        button:hover { opacity: 0.8; }
 
         button.outline {
             background: transparent;
@@ -89,9 +92,7 @@
             color: var(--text-color);
         }
 
-        textarea:focus { 
-            border-color: var(--text-color); 
-        }
+        textarea:focus { border-color: var(--text-color); }
 
         .notice {
             font-size: 12px;
@@ -109,7 +110,7 @@
 
         .hidden { display: none !important; }
         
-        /* マイページ用：お題リスト */
+        /* ユーザーマイページ用 */
         .user-header {
             display: flex;
             align-items: center;
@@ -119,26 +120,19 @@
             border-bottom: 1px solid var(--text-color);
         }
 
-        .user-name { 
-            font-size: 18px; 
-            font-weight: 700;
-        }
-
-        .inbox-title {
+        .user-name { font-size: 18px; font-weight: 700; }
+        .inbox-title { text-align: left; font-size: 14px; font-weight: 700; margin: 40px 0 15px 0; text-transform: uppercase; }
+        .odai-item { text-align: left; padding: 20px 0; font-size: 15px; line-height: 1.6; border-bottom: 1px solid var(--border-color); }
+        
+        .box-link-share {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            margin-top: 20px;
             text-align: left;
-            font-size: 14px;
-            font-weight: 700;
-            margin: 40px 0 15px 0;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .odai-item { 
-            text-align: left;
-            padding: 20px 0; 
-            font-size: 15px;
-            line-height: 1.6;
-            border-bottom: 1px solid var(--border-color);
+            word-break: break-all;
         }
     </style>
 </head>
@@ -146,30 +140,37 @@
 
 <div class="container">
     <h1>Scrabako</h1>
+    <!-- 今誰のページを表示しているか -->
+    <div id="page-owner-display" class="page-owner hidden"></div>
         
-    <!-- 1. 未ログイン画面（トップページ） -->
-    <div id="logged-out-zone">
-        <button id="login-btn">Scratchでログイン</button>
+    <!-- 1. トップ画面（誰のIDも指定されていない場合） -->
+    <div id="logged-out-zone" class="hidden">
+        <button id="login-btn">Scratchでログインしてお題箱を作る</button>
         <p class="notice">ログインすると、あなた専用のお題箱URLが作成されます。</p>
     </div>
 
-    <!-- 2. ログイン完了画面（マイページ） -->
+    <!-- 2. お題送信画面（?id=ユーザー名 でアクセスされた場合） -->
+    <div id="send-zone" class="hidden">
+        <textarea id="odai-input" placeholder="匿名のメッセージを入力..."></textarea>
+        <button id="send-btn">メッセージを送信</button>
+        <p class="notice">このメッセージは相手に匿名で届きます。<br><a href="?" style="color: inherit;">自分のお題箱を作る</a></p>
+    </div>
+
+    <!-- 3. 管理画面（ログインした本人のマイページ） -->
     <div id="logged-in-zone" class="hidden">
         <div class="user-header">
-            <span class="user-name">@<span id="username-display"></span></span>
+            <span class="user-name">@<span id="username-display"></span> の管理画面</span>
             <button id="logout-btn" class="outline">ログアウト</button>
         </div>
         
-        <!-- お題送信フォーム -->
-        <textarea id="odai-input" placeholder="匿名メッセージを入力（テスト送信できます）"></textarea>
-        <button id="send-btn">メッセージを送信</button>
+        <div class="box-link-share">
+            <strong>🔗 あなたのお題箱URL:</strong><br>
+            <span id="my-box-url" style="color: #555;"></span>
+        </div>
 
-        <!-- 受信一覧 -->
         <div id="odai-list-section" class="hidden">
-            <div class="inbox-title">Inbox</div>
-            <div id="odai-list">
-                <!-- ここにお題が追加されます -->
-            </div>
+            <div class="inbox-title">Inbox (受信箱)</div>
+            <div id="odai-list"></div>
         </div>
     </div>
 
@@ -179,9 +180,10 @@
 <script>
     const MY_SITE_URL = 'https://yt-syokupan.f5.si/scratch.html'; 
 
-    const base64Url = btoa(encodeURIComponent(MY_SITE_URL).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-        return String.fromCharCode('0x' + p1);
-    }));
+    // URLパラメーターの解析
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetBoxId = urlParams.get('id'); // ?id=ユーザー名
+    const privateCode = urlParams.get('privateCode'); // Scratch Auth用
 
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
@@ -190,29 +192,26 @@
     const odaiListDiv = document.getElementById('odai-list');
     const odaiListSection = document.getElementById('odai-list-section');
     const statusDiv = document.getElementById('status');
+    
     const loggedOutZone = document.getElementById('logged-out-zone');
+    const sendZone = document.getElementById('send-zone');
     const loggedInZone = document.getElementById('logged-in-zone');
     const usernameDisplay = document.getElementById('username-display');
+    const pageOwnerDisplay = document.getElementById('page-owner-display');
+    const myBoxUrlSpan = document.getElementById('my-box-url');
 
-    // ログイン処理
-    loginBtn.addEventListener('click', () => {
-        statusDiv.innerText = '接続中...';
-        const appName = encodeURIComponent("Scrabako");
-        const targetUrl = `https://auth.itinerary.eu.org/auth/?redirect=${base64Url}&name=${appName}`;
-        window.location.href = targetUrl;
-    });
+    // Base64処理（Scratch AuthへのリダイレクトURL用）
+    // ログイン後、確実にマイページへ戻すためにパラメーターを維持
+    const redirectUrlWithParam = privateCode ? MY_SITE_URL : window.location.href;
+    const base64Url = btoa(encodeURIComponent(redirectUrlWithParam).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+        return String.fromCharCode('0x' + p1);
+    }));
 
-    // 認証チェック
+    // ページ初期化ロジック
     window.addEventListener('DOMContentLoaded', async () => {
         const savedUser = localStorage.getItem('scratch_username');
-        if (savedUser) {
-            showLoggedIn(savedUser);
-            return;
-        }
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const privateCode = urlParams.get('privateCode');
-
+        // 1. Scratch Authからのコールバック（認証中）の場合
         if (privateCode) {
             statusDiv.innerText = 'アカウント検証中...';
             try {
@@ -222,8 +221,8 @@
 
                 if (data.valid && data.username) {
                     localStorage.setItem('scratch_username', data.username);
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    showLoggedIn(data.username);
+                    // URLをマイページ（?id=ユーザー名）に書き換えてリダイレクト
+                    window.location.href = `?id=${data.username}`;
                 } else {
                     statusDiv.innerText = '認証に失敗しました。';
                 }
@@ -231,41 +230,80 @@
                 console.error(error);
                 statusDiv.innerText = '通信エラーが発生しました。';
             }
+            return;
+        }
+
+        // 2. 表示モードの分岐
+        if (targetBoxId) {
+            // URLに ?id=xxx がある場合
+            if (savedUser && savedUser.toLowerCase() === targetBoxId.toLowerCase()) {
+                // 表示しているお題箱の持ち主本人なら「管理画面」を表示
+                showLoggedIn(savedUser);
+            } else {
+                // 他人のページ、または未ログインなら「お題送信画面」を表示
+                showSendPage(targetBoxId);
+            }
+        } else {
+            // URLに id がない場合
+            if (savedUser) {
+                // すでにログイン中なら、自分の個別ページへ自動リダイレクト
+                window.location.href = `?id=${savedUser}`;
+            } else {
+                // 完全な未ログイン状態なら「トップ画面」を表示
+                loggedOutZone.classList.remove('hidden');
+            }
         }
     });
 
-    logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('scratch_username');
-        window.location.href = window.location.pathname;
+    // ログイン処理
+    loginBtn.addEventListener('click', () => {
+        statusDiv.innerText = '接続中...';
+        const appName = encodeURIComponent("Scrabako");
+        const targetUrl = `https://auth.itinerary.eu.org/auth/?redirect=${base64Url}&name=${appName}`;
+        window.location.href = targetUrl;
     });
 
-    // メッセージ送信
+    // ログアウト処理
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('scratch_username');
+        window.location.href = '?'; // トップページへ戻る
+    });
+
+    // メッセージ送信処理（お題箱ごとの独立保存）
     sendBtn.addEventListener('click', () => {
         const text = odaiInput.value.trim();
         if (!text) return;
 
-        let savedOdai = JSON.parse(localStorage.getItem('scrabako_odai') || '[]');
+        // キー名を「scrabako_odai_ユーザー名」にすることで、ユーザーごとにデータを完全分離
+        const storageKey = `scrabako_odai_${targetBoxId.toLowerCase()}`;
+        let savedOdai = JSON.parse(localStorage.getItem(storageKey) || '[]');
         savedOdai.unshift(text); 
-        localStorage.setItem('scrabako_odai', JSON.stringify(savedOdai));
+        localStorage.setItem(storageKey, JSON.stringify(savedOdai));
 
         odaiInput.value = '';
-        statusDiv.innerText = '送信しました';
-        setTimeout(() => { statusDiv.innerText = ''; }, 2000);
-        
-        renderOdai();
+        statusDiv.innerText = '@' + targetBoxId + ' さんにお題を送信しました';
+        setTimeout(() => { statusDiv.innerText = ''; }, 3000);
     });
 
+    // 各画面の表示切り替え関数
     function showLoggedIn(username) {
-        loggedOutZone.classList.add('hidden');
         loggedInZone.classList.remove('hidden');
         usernameDisplay.innerText = username;
-        statusDiv.innerText = '';
-        renderOdai();
+        myBoxUrlSpan.innerText = `${MY_SITE_URL}?id=${username}`;
+        renderOdai(username);
     }
 
-    function renderOdai() {
+    function showSendPage(ownerName) {
+        pageOwnerDisplay.innerText = `@${ownerName} のお題箱`;
+        pageOwnerDisplay.classList.remove('hidden');
+        sendZone.classList.remove('hidden');
+    }
+
+    // 指定されたユーザーのお題だけを読み込んで描画
+    function renderOdai(username) {
         odaiListDiv.innerHTML = '';
-        const savedOdai = JSON.parse(localStorage.getItem('scrabako_odai') || '[]');
+        const storageKey = `scrabako_odai_${username.toLowerCase()}`;
+        const savedOdai = JSON.parse(localStorage.getItem(storageKey) || '[]');
         
         if (savedOdai.length === 0) {
             odaiListSection.classList.add('hidden');
