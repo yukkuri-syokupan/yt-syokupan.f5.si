@@ -4,7 +4,7 @@
 export const BADGE_CONFIG = {
     // 👑 運営・モデレーター用のカスタム画像
     admins: {
-        "yt-syokupan": "https://img.icons8.com/color/48/crown.png", // 例: 王冠の画像URL
+        "yukkuri_syokupan": "https://yt-syokupan.f5.si/scratch/verify1.png", // 例: 王冠の画像URL
         "admin-user2": "https://example.com/admin-icon.png"
     },
 
