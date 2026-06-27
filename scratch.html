@@ -77,6 +77,21 @@
             opacity: 1;
         }
         
+        /* ニックネーム入力欄のスタイル */
+        .name-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 10px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+        .name-input:focus { border-color: var(--text-color); }
+
         textarea {
             width: 100%;
             height: 140px;
@@ -121,7 +136,21 @@
 
         .user-name { font-size: 18px; font-weight: 700; }
         .inbox-title { text-align: left; font-size: 14px; font-weight: 700; margin: 40px 0 15px 0; text-transform: uppercase; }
-        .odai-item { text-align: left; padding: 20px 0; font-size: 15px; line-height: 1.6; border-bottom: 1px solid var(--border-color); }
+        
+        /* 受信アイテム（差出人名が見えるように調整） */
+        .odai-item { 
+            text-align: left; 
+            padding: 20px 0; 
+            font-size: 15px; 
+            line-height: 1.6; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+        .odai-sender {
+            font-size: 11px;
+            color: var(--sub-color);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
         
         .box-link-share {
             background: #fafafa;
@@ -147,9 +176,10 @@
     </div>
 
     <div id="send-zone" class="hidden">
-        <textarea id="odai-input" placeholder="匿名のメッセージを入力..."></textarea>
+        <input type="text" id="sender-name-input" class="name-input" placeholder="ニックネーム（空欄なら匿名さん）" maxlength="20">
+        <textarea id="odai-input" placeholder="メッセージを入力..."></textarea>
         <button id="send-btn">メッセージを送信</button>
-        <p class="notice">このメッセージは相手に匿名で届きます。<br><a href="?" style="color: inherit;">自分のお題箱を作る</a></p>
+        <p class="notice">このメッセージは相手に届きます。<br><a href="?" style="color: inherit;">自分のお題箱を作る</a></p>
     </div>
 
     <div id="logged-in-zone" class="hidden">
@@ -176,7 +206,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getDatabase, ref, push, get, child, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
 
-    // あなたのFirebaseプロジェクト設定を適用済
     const firebaseConfig = {
         apiKey: "AIzaSyAtEnMVm4Zwgo60dnwC_PtU-JmOvBheH9g",
         authDomain: "scrabako.firebaseapp.com",
@@ -200,6 +229,7 @@
     const logoutBtn = document.getElementById('logout-btn');
     const sendBtn = document.getElementById('send-btn');
     const odaiInput = document.getElementById('odai-input');
+    const senderNameInput = document.getElementById('sender-name-input');
     const odaiListDiv = document.getElementById('odai-list');
     const odaiListSection = document.getElementById('odai-list-section');
     const statusDiv = document.getElementById('status');
@@ -216,7 +246,6 @@
         return String.fromCharCode('0x' + p1);
     }));
 
-    // ページ初期化
     window.addEventListener('DOMContentLoaded', async () => {
         const savedUser = localStorage.getItem('scratch_username');
 
@@ -255,7 +284,6 @@
         }
     });
 
-    // Scratch Authログイン
     loginBtn.addEventListener('click', () => {
         statusDiv.innerText = '接続中...';
         const appName = encodeURIComponent("Scrabako");
@@ -263,25 +291,29 @@
         window.location.href = targetUrl;
     });
 
-    // ログアウト
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('scratch_username');
         window.location.href = '?';
     });
 
-    // 【送信処理】Realtime Databaseへ匿名保存
+    // 【送信処理】ニックネーム情報も含めて保存
     sendBtn.addEventListener('click', async () => {
         const text = odaiInput.value.trim();
         if (!text) return;
 
+        // 名前が空欄なら「匿名さん」にする
+        const senderName = senderNameInput.value.trim() || "匿名さん";
+
         try {
             const dbRef = ref(db, `odais/${targetBoxId.toLowerCase()}`);
             await push(dbRef, {
+                sender: senderName, // ニックネームを保存
                 content: text,
                 createdAt: serverTimestamp()
             });
 
             odaiInput.value = '';
+            senderNameInput.value = '';
             statusDiv.innerText = `@${targetBoxId} さんにお題を送信しました`;
             setTimeout(() => { statusDiv.innerText = ''; }, 3000);
         } catch (e) {
@@ -303,7 +335,7 @@
         sendZone.classList.remove('hidden');
     }
 
-    // 【取得処理】自分宛てのお題を取得して描画
+    // 【取得処理】ニックネームを表示できるように描画
     async function renderOdai(username) {
         odaiListDiv.innerHTML = '';
         const dbRef = ref(db);
@@ -314,13 +346,22 @@
                 odaiListSection.classList.remove('hidden');
                 const data = snapshot.val();
                 
-                // 配列に変換して新しいお題順（降順）に並び替え
                 const items = Object.values(data).reverse();
                 
                 items.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'odai-item';
-                    div.innerText = item.content;
+                    
+                    // ニックネームを表示する要素（過去のデータでsenderが無い場合は匿名さんとして扱う）
+                    const senderDiv = document.createElement('div');
+                    senderDiv.className = 'odai-sender';
+                    senderDiv.innerText = `From: ${item.sender || '匿名さん'}`;
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.innerText = item.content;
+                    
+                    div.appendChild(senderDiv);
+                    div.appendChild(contentDiv);
                     odaiListDiv.appendChild(div);
                 });
             } else {
