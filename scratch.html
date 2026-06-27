@@ -3,314 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrabako — 匿名お題箱</title>
+    <title>Scrabako</title>
     <style>
         :root {
-            --bg-color: #0a0a0a; /* ソリッドな漆黒 */
-            --card-bg: #141414; /* 深いグレー */
-            --text-color: #ffffff; /* 純白 */
-            --sub-text-color: #888888; 
-            --border-color: #222222;
-            --accent-glow: #00ffcc; /* サイバー感のあるネオン（隠し味） */
-            
-            --radius-lg: 16px;
-            --radius-md: 8px;
+            --bg-color: #ffffff; /* 完全な白 */
+            --text-color: #000000; /* 完全な黒 */
+            --sub-color: #777777;
+            --border-color: #e5e5e5;
         }
 
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             background: var(--bg-color); 
             color: var(--text-color);
             margin: 0; 
             padding: 0;
             display: flex; 
             justify-content: center; 
+            align-items: center;
             min-height: 100vh; 
             box-sizing: border-box;
-            letter-spacing: 0.08em;
         }
 
-        .main-wrapper {
+        .container {
             width: 100%;
-            max-width: 700px; 
-            padding: 60px 20px; 
+            max-width: 480px; 
+            padding: 40px 20px;
             box-sizing: border-box;
-        }
-
-        header {
             text-align: center;
-            margin-bottom: 50px;
         }
 
         h1 { 
-            font-size: 42px; 
-            font-weight: 900;
-            margin: 0 0 10px 0;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            background: linear-gradient(45deg, #fff 60%, var(--sub-text-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 32px; 
+            font-weight: 700;
+            margin: 0 0 40px 0;
+            letter-spacing: 0.05em;
         }
 
-        .subtitle { 
-            font-size: 13px; 
-            color: var(--sub-text-color); 
-            margin: 0;
-            font-weight: 400;
-            text-transform: uppercase;
-        }
-        
-        /* 共通のボタンデザイン */
+        /* ソリッドな黒ボタン */
         button { 
             background: var(--text-color); 
             color: var(--bg-color); 
             border: 1px solid var(--text-color); 
-            padding: 14px 32px; 
-            border-radius: var(--radius-md); 
-            font-size: 15px; 
-            font-weight: 700;
+            padding: 14px 28px; 
+            border-radius: 6px; 
+            font-size: 14px; 
+            font-weight: 600;
             cursor: pointer; 
-            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
-            letter-spacing: 0.1em;
+            transition: opacity 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         button:hover { 
-            background: var(--bg-color);
-            color: var(--text-color);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-            transform: translateY(-2px);
+            opacity: 0.8;
         }
 
         button.outline {
             background: transparent;
-            color: var(--sub-text-color);
+            color: var(--sub-color);
             border: 1px solid var(--border-color);
+            width: auto;
+            padding: 8px 16px;
+            font-size: 12px;
         }
 
         button.outline:hover {
-            border-color: #fff;
-            color: #fff;
-            box-shadow: none;
+            border-color: var(--text-color);
+            color: var(--text-color);
+            opacity: 1;
         }
         
-        /* トップページのコンテンツ（面白みを強化） */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 11fr);
-            gap: 15px;
-            margin: 40px 0;
-            text-align: left;
-        }
-
-        .feature-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            border-radius: var(--radius-md);
-        }
-
-        .feature-card num {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--sub-text-color);
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .feature-card h3 { margin: 0 0 5px 0; font-size: 14px; }
-        .feature-card p { margin: 0; font-size: 11px; color: var(--sub-text-color); line-height: 1.5; }
-
-        /* インタラクティブな体験エリア */
-        .interactive-preview {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 30px;
-            margin-bottom: 40px;
-            position: relative;
-        }
-
-        .preview-badge {
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            background: #222;
-            font-size: 10px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            color: var(--sub-text-color);
-        }
-
         textarea {
             width: 100%;
-            height: 120px;
+            height: 140px;
             padding: 15px;
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
+            border-radius: 6px;
             resize: none;
             box-sizing: border-box;
             font-size: 15px;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            margin-bottom: 10px;
-            background: #0d0d0d;
-            color: #fff;
+            margin-bottom: 15px;
+            background: var(--bg-color);
+            color: var(--text-color);
         }
 
         textarea:focus { 
-            border-color: #fff; 
-            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+            border-color: var(--text-color); 
         }
 
-        .counter-zone {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .notice {
             font-size: 12px;
-            color: var(--sub-text-color);
-            margin-bottom: 15px;
+            color: var(--sub-color);
+            margin-top: 30px;
+            line-height: 1.5;
         }
         
         .status { 
             margin-top: 20px; 
             font-size: 13px; 
-            color: var(--accent-glow); 
-            text-align: center;
+            color: var(--text-color); 
             min-height: 1.5em;
-            font-family: monospace;
         }
 
         .hidden { display: none !important; }
         
-        /* お題リスト（スタイリッシュなカード型） */
-        .odai-list-section {
-            margin-top: 60px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 40px;
-        }
-
-        .odai-list-title {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 25px;
-        }
-
-        .odai-item { 
-            background: var(--card-bg); 
-            padding: 25px; 
-            margin-bottom: 15px; 
-            font-size: 15px;
-            line-height: 1.7;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            position: relative;
-            transition: border-color 0.2s, transform 0.2s;
-        }
-
-        .odai-item:hover {
-            border-color: #444;
-            transform: translateX(5px);
-        }
-
-        /* マイページのユーザー情報エリア */
-        .user-info {
+        /* マイページ用：お題リスト */
+        .user-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 40px;
-            padding: 20px;
-            background: var(--card-bg);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--text-color);
         }
 
-        .user-badge { 
+        .user-name { 
             font-size: 18px; 
             font-weight: 700;
-            font-family: monospace;
         }
 
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+        .inbox-title {
+            text-align: left;
+            font-size: 14px;
+            font-weight: 700;
+            margin: 40px 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        .pulse { animation: pulse 2s infinite; }
 
+        .odai-item { 
+            text-align: left;
+            padding: 20px 0; 
+            font-size: 15px;
+            line-height: 1.6;
+            border-bottom: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body>
 
-<div class="main-wrapper">
-    <header>
-        <h1>Scrabako</h1>
-        <p class="subtitle">// Anonymous Box for Scratchers</p>
-    </header>
+<div class="container">
+    <h1>Scrabako</h1>
         
-    <div class="content-zone">
-        
-        <div id="logged-out-zone">
-            <div class="interactive-preview">
-                <span class="preview-badge">Sandbox / お題箱の体験</span>
-                <textarea id="preview-input" placeholder="ここに入力した文字が、下でリアルタイムに文字数カウントされます。自由に触ってみてください。"></textarea>
-                <div class="counter-zone">
-                    <span>STATUS: READY</span>
-                    <span><span id="char-count">0</span> / 200 文字</span>
-                </div>
-                <button id="preview-send-btn" style="width: 100%;">検証用ダミー送信</button>
-            </div>
-
-            <div style="text-align: center; margin: 40px 0;">
-                <p style="font-size: 16px; color: var(--sub-text-color); margin-bottom: 20px;">あなたのScratchアカウントと瞬時に同期します。</p>
-                <button id="login-btn">Scratchでログイン</button>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <num>01</num>
-                    <h3>安全な認証</h3>
-                    <p>公式コメントを利用したパスワード不要の認証システム。</p>
-                </div>
-                <div class="feature-card">
-                    <num>02</num>
-                    <h3>完全な匿名</h3>
-                    <p>送信者のデータは暗号化すらされず、最初から保存しません。</p>
-                </div>
-                <div class="feature-card">
-                    <num>03</num>
-                    <h3>美しき静寂</h3>
-                    <p>ノイズを極限まで削ぎ落とした、言葉に集中するための場所。</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="logged-in-zone" class="hidden">
-            <div class="user-info">
-                <span class="user-badge">&gt; <span id="username-display"></span></span>
-                <button id="logout-btn" class="outline">LOGOUT</button>
-            </div>
-            
-            <div class="interactive-preview">
-                <span class="preview-badge" style="color: var(--accent-glow);">箱は稼働中です</span>
-                <textarea id="odai-input" placeholder="匿名でメッセージを送信（自分の箱へのテスト投稿になります）"></textarea>
-                <div class="counter-zone">
-                    <span class="pulse" style="color: var(--accent-glow);">● ONLINE</span>
-                    <span><span id="main-char-count">0</span> / 200 文字</span>
-                </div>
-                <button id="send-btn" style="width: 100%;">お題を投げ込む</button>
-            </div>
-
-            <div id="odai-list-section" class="odai-list-section hidden">
-                <h3 class="odai-list-title">INBOX</h3>
-                <div id="odai-list">
-                    </div>
-            </div>
-        </div>
-
-        <div id="status" class="status"></div>
+    <!-- 1. 未ログイン画面（トップページ） -->
+    <div id="logged-out-zone">
+        <button id="login-btn">Scratchでログイン</button>
+        <p class="notice">ログインすると、あなた専用のお題箱URLが作成されます。</p>
     </div>
+
+    <!-- 2. ログイン完了画面（マイページ） -->
+    <div id="logged-in-zone" class="hidden">
+        <div class="user-header">
+            <span class="user-name">@<span id="username-display"></span></span>
+            <button id="logout-btn" class="outline">ログアウト</button>
+        </div>
+        
+        <!-- お題送信フォーム -->
+        <textarea id="odai-input" placeholder="匿名メッセージを入力（テスト送信できます）"></textarea>
+        <button id="send-btn">メッセージを送信</button>
+
+        <!-- 受信一覧 -->
+        <div id="odai-list-section" class="hidden">
+            <div class="inbox-title">Inbox</div>
+            <div id="odai-list">
+                <!-- ここにお題が追加されます -->
+            </div>
+        </div>
+    </div>
+
+    <div id="status" class="status"></div>
 </div>
 
 <script>
@@ -320,15 +183,10 @@
         return String.fromCharCode('0x' + p1);
     }));
 
-    // 要素の取得
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const sendBtn = document.getElementById('send-btn');
     const odaiInput = document.getElementById('odai-input');
-    const previewInput = document.getElementById('preview-input');
-    const charCount = document.getElementById('char-count');
-    const mainCharCount = document.getElementById('main-char-count');
-    const previewSendBtn = document.getElementById('preview-send-btn');
     const odaiListDiv = document.getElementById('odai-list');
     const odaiListSection = document.getElementById('odai-list-section');
     const statusDiv = document.getElementById('status');
@@ -336,28 +194,9 @@
     const loggedInZone = document.getElementById('logged-in-zone');
     const usernameDisplay = document.getElementById('username-display');
 
-    // リアルタイム文字数カウンターの処理
-    previewInput.addEventListener('input', () => {
-        charCount.innerText = previewInput.value.length;
-    });
-    if(odaiInput) {
-        odaiInput.addEventListener('input', () => {
-            mainCharCount.innerText = odaiInput.value.length;
-        });
-    }
-
-    // ダミー送信ボタンの遊び要素
-    previewSendBtn.addEventListener('click', () => {
-        if(!previewInput.value.trim()) return;
-        statusDiv.innerText = ">> SANDBOX_MODE: 送信のシミュレートに成功しました（ログイン後に実際に保存されます）";
-        previewInput.value = "";
-        charCount.innerText = 0;
-        setTimeout(() => { statusDiv.innerText = ""; }, 4000);
-    });
-
     // ログイン処理
     loginBtn.addEventListener('click', () => {
-        statusDiv.innerText = '>> REDIRECTING TO SCRATCH AUTH...';
+        statusDiv.innerText = '接続中...';
         const appName = encodeURIComponent("Scrabako");
         const targetUrl = `https://auth.itinerary.eu.org/auth/?redirect=${base64Url}&name=${appName}`;
         window.location.href = targetUrl;
@@ -375,7 +214,7 @@
         const privateCode = urlParams.get('privateCode');
 
         if (privateCode) {
-            statusDiv.innerText = '>> VERIFYING ACCOUNT...';
+            statusDiv.innerText = 'アカウント検証中...';
             try {
                 const verifyUrl = `https://auth-api.itinerary.eu.org/auth/verifyToken/${privateCode}?method=comment&redirect=${encodeURIComponent(base64Url)}`;
                 const response = await fetch(verifyUrl);
@@ -386,11 +225,11 @@
                     window.history.replaceState({}, document.title, window.location.pathname);
                     showLoggedIn(data.username);
                 } else {
-                    statusDiv.innerText = '>> ERROR: AUTHENTICATION FAILED.';
+                    statusDiv.innerText = '認証に失敗しました。';
                 }
             } catch (error) {
                 console.error(error);
-                statusDiv.innerText = '>> ERROR: CONNECTION FAILED.';
+                statusDiv.innerText = '通信エラーが発生しました。';
             }
         }
     });
@@ -400,6 +239,7 @@
         window.location.href = window.location.pathname;
     });
 
+    // メッセージ送信
     sendBtn.addEventListener('click', () => {
         const text = odaiInput.value.trim();
         if (!text) return;
@@ -409,9 +249,8 @@
         localStorage.setItem('scrabako_odai', JSON.stringify(savedOdai));
 
         odaiInput.value = '';
-        mainCharCount.innerText = 0;
-        statusDiv.innerText = '>> SUCCESS: MESSAGE SENT ANONYMOUSLY.';
-        setTimeout(() => { statusDiv.innerText = ''; }, 3000);
+        statusDiv.innerText = '送信しました';
+        setTimeout(() => { statusDiv.innerText = ''; }, 2000);
         
         renderOdai();
     });
@@ -419,7 +258,7 @@
     function showLoggedIn(username) {
         loggedOutZone.classList.add('hidden');
         loggedInZone.classList.remove('hidden');
-        usernameDisplay.innerText = username.toUpperCase();
+        usernameDisplay.innerText = username;
         statusDiv.innerText = '';
         renderOdai();
     }
