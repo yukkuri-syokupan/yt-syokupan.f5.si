@@ -110,7 +110,6 @@
 
         .hidden { display: none !important; }
         
-        /* ユーザーマイページ用 */
         .user-header {
             display: flex;
             align-items: center;
@@ -140,23 +139,19 @@
 
 <div class="container">
     <h1>Scrabako</h1>
-    <!-- 今誰のページを表示しているか -->
     <div id="page-owner-display" class="page-owner hidden"></div>
         
-    <!-- 1. トップ画面（誰のIDも指定されていない場合） -->
     <div id="logged-out-zone" class="hidden">
         <button id="login-btn">Scratchでログインしてお題箱を作る</button>
         <p class="notice">ログインすると、あなた専用のお題箱URLが作成されます。</p>
     </div>
 
-    <!-- 2. お題送信画面（?id=ユーザー名 でアクセスされた場合） -->
     <div id="send-zone" class="hidden">
         <textarea id="odai-input" placeholder="匿名のメッセージを入力..."></textarea>
         <button id="send-btn">メッセージを送信</button>
         <p class="notice">このメッセージは相手に匿名で届きます。<br><a href="?" style="color: inherit;">自分のお題箱を作る</a></p>
     </div>
 
-    <!-- 3. 管理画面（ログインした本人のマイページ） -->
     <div id="logged-in-zone" class="hidden">
         <div class="user-header">
             <span class="user-name">@<span id="username-display"></span> の管理画面</span>
@@ -177,13 +172,29 @@
     <div id="status" class="status"></div>
 </div>
 
-<script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getDatabase, ref, push, get, child, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+    // あなたのFirebaseプロジェクト設定を適用済
+    const firebaseConfig = {
+        apiKey: "AIzaSyAtEnMVm4Zwgo60dnwC_PtU-JmOvBheH9g",
+        authDomain: "scrabako.firebaseapp.com",
+        projectId: "scrabako",
+        storageBucket: "scrabako.firebasestorage.app",
+        messagingSenderId: "733907569048",
+        appId: "1:733907569048:web:94b756e8dd8ea572dec3ed",
+        databaseURL: "https://scrabako-default-rtdb.firebaseio.com/" 
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
     const MY_SITE_URL = 'https://yt-syokupan.f5.si/scratch.html'; 
 
-    // URLパラメーターの解析
     const urlParams = new URLSearchParams(window.location.search);
-    const targetBoxId = urlParams.get('id'); // ?id=ユーザー名
-    const privateCode = urlParams.get('privateCode'); // Scratch Auth用
+    const targetBoxId = urlParams.get('id'); 
+    const privateCode = urlParams.get('privateCode'); 
 
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
@@ -200,18 +211,15 @@
     const pageOwnerDisplay = document.getElementById('page-owner-display');
     const myBoxUrlSpan = document.getElementById('my-box-url');
 
-    // Base64処理（Scratch AuthへのリダイレクトURL用）
-    // ログイン後、確実にマイページへ戻すためにパラメーターを維持
     const redirectUrlWithParam = privateCode ? MY_SITE_URL : window.location.href;
     const base64Url = btoa(encodeURIComponent(redirectUrlWithParam).replace(/%([0-9A-F]{2})/g, (match, p1) => {
         return String.fromCharCode('0x' + p1);
     }));
 
-    // ページ初期化ロジック
+    // ページ初期化
     window.addEventListener('DOMContentLoaded', async () => {
         const savedUser = localStorage.getItem('scratch_username');
 
-        // 1. Scratch Authからのコールバック（認証中）の場合
         if (privateCode) {
             statusDiv.innerText = 'アカウント検証中...';
             try {
@@ -221,7 +229,6 @@
 
                 if (data.valid && data.username) {
                     localStorage.setItem('scratch_username', data.username);
-                    // URLをマイページ（?id=ユーザー名）に書き換えてリダイレクト
                     window.location.href = `?id=${data.username}`;
                 } else {
                     statusDiv.innerText = '認証に失敗しました。';
@@ -233,29 +240,22 @@
             return;
         }
 
-        // 2. 表示モードの分岐
         if (targetBoxId) {
-            // URLに ?id=xxx がある場合
             if (savedUser && savedUser.toLowerCase() === targetBoxId.toLowerCase()) {
-                // 表示しているお題箱の持ち主本人なら「管理画面」を表示
                 showLoggedIn(savedUser);
             } else {
-                // 他人のページ、または未ログインなら「お題送信画面」を表示
                 showSendPage(targetBoxId);
             }
         } else {
-            // URLに id がない場合
             if (savedUser) {
-                // すでにログイン中なら、自分の個別ページへ自動リダイレクト
                 window.location.href = `?id=${savedUser}`;
             } else {
-                // 完全な未ログイン状態なら「トップ画面」を表示
                 loggedOutZone.classList.remove('hidden');
             }
         }
     });
 
-    // ログイン処理
+    // Scratch Authログイン
     loginBtn.addEventListener('click', () => {
         statusDiv.innerText = '接続中...';
         const appName = encodeURIComponent("Scrabako");
@@ -263,29 +263,33 @@
         window.location.href = targetUrl;
     });
 
-    // ログアウト処理
+    // ログアウト
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('scratch_username');
-        window.location.href = '?'; // トップページへ戻る
+        window.location.href = '?';
     });
 
-    // メッセージ送信処理（お題箱ごとの独立保存）
-    sendBtn.addEventListener('click', () => {
+    // 【送信処理】Realtime Databaseへ匿名保存
+    sendBtn.addEventListener('click', async () => {
         const text = odaiInput.value.trim();
         if (!text) return;
 
-        // キー名を「scrabako_odai_ユーザー名」にすることで、ユーザーごとにデータを完全分離
-        const storageKey = `scrabako_odai_${targetBoxId.toLowerCase()}`;
-        let savedOdai = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        savedOdai.unshift(text); 
-        localStorage.setItem(storageKey, JSON.stringify(savedOdai));
+        try {
+            const dbRef = ref(db, `odais/${targetBoxId.toLowerCase()}`);
+            await push(dbRef, {
+                content: text,
+                createdAt: serverTimestamp()
+            });
 
-        odaiInput.value = '';
-        statusDiv.innerText = '@' + targetBoxId + ' さんにお題を送信しました';
-        setTimeout(() => { statusDiv.innerText = ''; }, 3000);
+            odaiInput.value = '';
+            statusDiv.innerText = `@${targetBoxId} さんにお題を送信しました`;
+            setTimeout(() => { statusDiv.innerText = ''; }, 3000);
+        } catch (e) {
+            console.error(e);
+            statusDiv.innerText = '送信に失敗しました。';
+        }
     });
 
-    // 各画面の表示切り替え関数
     function showLoggedIn(username) {
         loggedInZone.classList.remove('hidden');
         usernameDisplay.innerText = username;
@@ -299,24 +303,32 @@
         sendZone.classList.remove('hidden');
     }
 
-    // 指定されたユーザーのお題だけを読み込んで描画
-    function renderOdai(username) {
+    // 【取得処理】自分宛てのお題を取得して描画
+    async function renderOdai(username) {
         odaiListDiv.innerHTML = '';
-        const storageKey = `scrabako_odai_${username.toLowerCase()}`;
-        const savedOdai = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const dbRef = ref(db);
         
-        if (savedOdai.length === 0) {
-            odaiListSection.classList.add('hidden');
-            return;
+        try {
+            const snapshot = await get(child(dbRef, `odais/${username.toLowerCase()}`));
+            if (snapshot.exists()) {
+                odaiListSection.classList.remove('hidden');
+                const data = snapshot.val();
+                
+                // 配列に変換して新しいお題順（降順）に並び替え
+                const items = Object.values(data).reverse();
+                
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'odai-item';
+                    div.innerText = item.content;
+                    odaiListDiv.appendChild(div);
+                });
+            } else {
+                odaiListSection.classList.add('hidden');
+            }
+        } catch (e) {
+            console.error(e);
         }
-
-        odaiListSection.classList.remove('hidden');
-        savedOdai.forEach(odai => {
-            const div = document.createElement('div');
-            div.className = 'odai-item';
-            div.innerText = odai;
-            odaiListDiv.appendChild(div);
-        });
     }
 </script>
 </body>
