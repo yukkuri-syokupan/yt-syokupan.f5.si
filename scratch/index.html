@@ -10,6 +10,7 @@
             --text-color: #000000;
             --sub-color: #777777;
             --border-color: #e5e5e5;
+            --card-bg: #fafafa;
         }
 
         body { 
@@ -44,16 +45,16 @@
             font-size: 16px;
             font-weight: 700;
             color: var(--text-color);
-            margin-bottom: 10px; /* 画像との隙間を程よく */
+            margin-bottom: 10px;
             text-align: center;
         }
 
-        /* 🖼️ カスタムバッチ画像を適切なサイズ（24px）に修正 */
+        /* 🖼️ 送信画面でタイトルの真下に表示されるバッチ画像 */
         .custom-badge-block {
             width: 24px;
             height: 24px;
             object-fit: contain;
-            margin: 0 auto 25px auto; /* 下の入力欄との隙間 */
+            margin: 0 auto 25px auto;
             display: block;
         }
 
@@ -73,15 +74,17 @@
         button:hover { opacity: 0.8; }
         button:disabled { background: #cccccc; border-color: #cccccc; color: #666666; cursor: not-allowed; opacity: 1; }
 
+        /* ⚙️ 設定用カード内のスタイリッシュなアウトラインボタン */
         button.outline {
             background: transparent;
-            color: var(--sub-color);
-            border: 1px solid var(--border-color);
+            color: #ff4757; /* ログアウトは少し警告色寄りに */
+            border: 1px solid #ffcccb;
             width: auto;
             padding: 8px 16px;
             font-size: 12px;
+            border-radius: 4px;
         }
-        button.outline:hover { border-color: var(--text-color); color: var(--text-color); opacity: 1; }
+        button.outline:hover { background: #fff5f5; border-color: #ff4757; opacity: 1; }
         
         .name-input {
             width: 100%;
@@ -118,14 +121,48 @@
         .hidden { display: none !important; }
         .hp-trap { position: absolute; overflow: hidden; clip: rect(0 0 0 0); height: 1px; width: 1px; margin: -1px; padding: 0; border: 0; }
         
-        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--text-color); }
-        .user-name { font-size: 18px; font-weight: 700; width: 100%; text-align: center; }
         .inbox-title { text-align: left; font-size: 14px; font-weight: 700; margin: 40px 0 15px 0; text-transform: uppercase; }
         
         .odai-item { text-align: left; padding: 20px 0; font-size: 15px; line-height: 1.6; border-bottom: 1px solid var(--border-color); }
         .odai-sender { font-size: 11px; color: var(--sub-color); margin-bottom: 6px; font-weight: 600; }
         
-        .box-link-share { background: #fafafa; padding: 15px; border-radius: 6px; font-size: 12px; border: 1px solid var(--border-color); margin-top: 20px; text-align: left; word-break: break-all; }
+        /* 📦 共有URLとアカウント設定用の共通カード枠 */
+        .info-card { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            border: 1px solid var(--border-color); 
+            margin-top: 20px; 
+            text-align: left; 
+        }
+        .info-card strong { font-size: 14px; color: var(--text-color); display: block; margin-bottom: 8px; }
+        .info-card p { margin: 0 0 15px 0; color: var(--sub-color); font-size: 12px; line-height: 1.4; }
+
+        /* 🔧 設定項目を綺麗に横並びにするレイアウト */
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        .badge-preview-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        .settings-badge-img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+        .no-badge-text {
+            font-size: 12px;
+            color: var(--sub-color);
+            font-weight: normal;
+        }
     </style>
 </head>
 <body>
@@ -154,13 +191,23 @@
     </div>
 
     <div id="logged-in-zone" class="hidden">
-        <div class="user-header">
-            <button id="logout-btn" class="outline">ログアウト</button>
-        </div>
         
-        <div class="box-link-share">
-            <strong>🔗 あなたのお題箱URL:</strong><br>
+        <div class="info-card" style="word-break: break-all;">
+            <strong>🔗 あなたのお題箱URL:</strong>
             <span id="my-box-url" style="color: #555;"></span>
+        </div>
+
+        <div class="info-card">
+            <strong>⚙️ アカウント設定</strong>
+            <p>現在のバッチ情報確認や、アカウントのログアウトが行えます。</p>
+            
+            <div class="settings-row">
+                <div class="badge-preview-area">
+                    <span>現在のバッチ:</span>
+                    <span id="settings-badge-container"></span>
+                </div>
+                <button id="logout-btn" class="outline">ログアウト</button>
+            </div>
         </div>
 
         <div id="odai-list-section" class="hidden">
@@ -191,7 +238,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 🔗 現在のURL環境（末尾スラッシュでも対応可）を自動取得
     const MY_SITE_URL = window.location.origin + window.location.pathname; 
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -214,29 +260,24 @@
     const pageOwnerDisplay = document.getElementById('page-owner-display');
     const myBoxUrlSpan = document.getElementById('my-box-url');
     const customBadgeDisplay = document.getElementById('custom-badge-display');
+    const settingsBadgeContainer = document.getElementById('settings-badge-container');
 
-    function loadAndShowBadgeImage(username) {
-        if (!username) return;
+    // 🖼️ ユーザーのカスタム画像URLを引っ張ってくる共通ロジック
+    function getBadgeUrl(username) {
+        if (!username) return "";
         const lowerName = username.toLowerCase();
-        let imageUrl = "";
 
         const adminKey = Object.keys(BADGE_CONFIG.admins || {}).find(k => k.toLowerCase() === lowerName);
         if (adminKey && BADGE_CONFIG.admins[adminKey]) {
-            imageUrl = BADGE_CONFIG.admins[adminKey];
-        } else {
-            const verifiedKey = Object.keys(BADGE_CONFIG.verified || {}).find(k => k.toLowerCase() === lowerName);
-            if (verifiedKey && BADGE_CONFIG.verified[verifiedKey]) {
-                imageUrl = BADGE_CONFIG.verified[verifiedKey];
-            }
+            return BADGE_CONFIG.admins[adminKey];
         }
 
-        if (imageUrl) {
-            customBadgeDisplay.src = imageUrl;
-            customBadgeDisplay.classList.remove('hidden');
-        } else {
-            customBadgeDisplay.src = "";
-            customBadgeDisplay.classList.add('hidden');
+        const verifiedKey = Object.keys(BADGE_CONFIG.verified || {}).find(k => k.toLowerCase() === lowerName);
+        if (verifiedKey && BADGE_CONFIG.verified[verifiedKey]) {
+            return BADGE_CONFIG.verified[verifiedKey];
         }
+
+        return "";
     }
 
     function checkCooldown() {
@@ -269,7 +310,6 @@
     window.addEventListener('DOMContentLoaded', async () => {
         const savedUser = localStorage.getItem('scratch_username');
 
-        // 動的な環境に合わせた認証用Base64URLの生成
         const redirectUrlWithParam = privateCode ? MY_SITE_URL : window.location.href;
         const base64Url = btoa(encodeURIComponent(redirectUrlWithParam).replace(/%([0-9A-F]{2})/g, (match, p1) => {
             return String.fromCharCode('0x' + p1);
@@ -360,24 +400,43 @@
         }
     });
 
+    // 🛠️ 新しい管理画面のレンダリング
     function showLoggedIn(username) {
         loggedInZone.classList.remove('hidden');
         
         pageOwnerDisplay.innerText = `@${username} の管理画面`;
         pageOwnerDisplay.classList.remove('hidden');
         
+        // 管理画面のトップにある邪魔な単体画像は非表示にする
+        customBadgeDisplay.classList.add('hidden');
+        
         myBoxUrlSpan.innerText = `${MY_SITE_URL}?id=${username}`;
         
-        loadAndShowBadgeImage(username);
+        // ⚙️ 設定カードの中にバッチプレビューを出力する
+        const badgeUrl = getBadgeUrl(username);
+        if (badgeUrl) {
+            settingsBadgeContainer.innerHTML = `<img src="${badgeUrl}" class="settings-badge-img" alt="Badge Preview">`;
+        } else {
+            settingsBadgeContainer.innerHTML = `<span class="no-badge-text">なし（一般ユーザー）</span>`;
+        }
+
         renderOdai(username);
     }
 
+    // お題送信画面
     function showSendPage(ownerName) {
         pageOwnerDisplay.innerText = `@${ownerName} のお題箱`;
         pageOwnerDisplay.classList.remove('hidden');
         sendZone.classList.remove('hidden');
         
-        loadAndShowBadgeImage(ownerName);
+        // 送信画面では、従来どおりタイトルの真下に画像を表示
+        const badgeUrl = getBadgeUrl(ownerName);
+        if (badgeUrl) {
+            customBadgeDisplay.src = badgeUrl;
+            customBadgeDisplay.classList.remove('hidden');
+        } else {
+            customBadgeDisplay.classList.add('hidden');
+        }
     }
 
     async function renderOdai(username) {
