@@ -40,22 +40,21 @@
             letter-spacing: 0.05em;
         }
 
-        /* 👑 お題箱のタイトルテキスト（下との隙間を狭く調整） */
+        /* 👑 タイトルのスタイル */
         .page-owner {
             font-size: 16px;
             font-weight: 700;
             color: var(--text-color);
             margin-bottom: 15px;
-            display: block;
             text-align: center;
         }
 
-        /* 🖼️ タイトルの「真下」に表示されるカスタム画像エリア */
+        /* 🖼️ タイトルの真下に表示されるカスタム画像（サイズ固定・中央寄せ） */
         .custom-badge-block {
-            width: 60px;  /* HTML側（CSS）でサイズを指定して整える */
+            width: 60px;
             height: 60px;
             object-fit: contain;
-            margin: 0 auto 30px auto; /* 真ん中に寄せて、下の入力欄と30px空ける */
+            margin: 0 auto 30px auto;
             display: block;
         }
 
@@ -120,8 +119,9 @@
         .hidden { display: none !important; }
         .hp-trap { position: absolute; overflow: hidden; clip: rect(0 0 0 0); height: 1px; width: 1px; margin: -1px; padding: 0; border: 0; }
         
-        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--text-color); }
-        .user-name { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        /* 🛠️ 管理画面用のヘッダー幅微調整 */
+        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--text-color); }
+        .user-name { font-size: 18px; font-weight: 700; width: 100%; text-align: center; }
         .inbox-title { text-align: left; font-size: 14px; font-weight: 700; margin: 40px 0 15px 0; text-transform: uppercase; }
         
         .odai-item { text-align: left; padding: 20px 0; font-size: 15px; line-height: 1.6; border-bottom: 1px solid var(--border-color); }
@@ -134,9 +134,10 @@
 
 <div class="container">
     <h1>Scrabako</h1>
+    
     <div id="page-owner-display" class="page-owner hidden"></div>
     
-    <img id="custom-badge-display" class="custom-badge-block hidden" src="" alt="Badge Image">
+    <img id="custom-badge-display" class="custom-badge-block hidden" src="" alt="Badge">
         
     <div id="logged-out-zone" class="hidden">
         <button id="login-btn">Scratchでログインしてお題箱を作る</button>
@@ -157,7 +158,6 @@
 
     <div id="logged-in-zone" class="hidden">
         <div class="user-header">
-            <span class="user-name">@<span id="username-display"></span> の管理画面</span>
             <button id="logout-btn" class="outline">ログアウト</button>
         </div>
         
@@ -179,6 +179,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getDatabase, ref, push, get, child, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
     
+    // 🚨 JSファイルの読込を確実にするためモジュール内で一番に処理
     import { BADGE_CONFIG } from "./badge-config.js";
 
     const firebaseConfig = {
@@ -213,35 +214,31 @@
     const loggedOutZone = document.getElementById('logged-out-zone');
     const sendZone = document.getElementById('send-zone');
     const loggedInZone = document.getElementById('logged-in-zone');
-    const usernameDisplay = document.getElementById('username-display');
     const pageOwnerDisplay = document.getElementById('page-owner-display');
     const myBoxUrlSpan = document.getElementById('my-box-url');
     const customBadgeDisplay = document.getElementById('custom-badge-display');
 
-    // 🖼️ ユーザー名から画像のURLを引っ張ってきて、真下のimgタグに反映する関数
+    // 🖼️ 確実に画像を読み込んで表示する修正版ロジック
     function loadAndShowBadgeImage(username) {
         if (!username) return;
         const lowerName = username.toLowerCase();
-        
         let imageUrl = "";
 
-        // adminに名前があればその画像URL
         const adminKey = Object.keys(BADGE_CONFIG.admins || {}).find(k => k.toLowerCase() === lowerName);
         if (adminKey && BADGE_CONFIG.admins[adminKey]) {
             imageUrl = BADGE_CONFIG.admins[adminKey];
         } else {
-            // なければverifiedから探す
             const verifiedKey = Object.keys(BADGE_CONFIG.verified || {}).find(k => k.toLowerCase() === lowerName);
             if (verifiedKey && BADGE_CONFIG.verified[verifiedKey]) {
                 imageUrl = BADGE_CONFIG.verified[verifiedKey];
             }
         }
 
-        // 画像URLが見つかれば表示、なければimgタグごと隠す
         if (imageUrl) {
             customBadgeDisplay.src = imageUrl;
             customBadgeDisplay.classList.remove('hidden');
         } else {
+            customBadgeDisplay.src = "";
             customBadgeDisplay.classList.add('hidden');
         }
     }
@@ -275,6 +272,12 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
         const savedUser = localStorage.getItem('scratch_username');
+
+        // ログイン処理のためのリダイレクト生成
+        const redirectUrlWithParam = privateCode ? MY_SITE_URL : window.location.href;
+        const base64Url = btoa(encodeURIComponent(redirectUrlWithParam).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+            return String.fromCharCode('0x' + p1);
+        }));
 
         if (privateCode) {
             statusDiv.innerText = 'アカウント検証中...';
@@ -315,6 +318,11 @@
     loginBtn.addEventListener('click', () => {
         statusDiv.innerText = '接続中...';
         const appName = encodeURIComponent("Scrabako");
+        // ログインボタン用のベースURL作成
+        const redirectUrlWithParam = window.location.href;
+        const base64Url = btoa(encodeURIComponent(redirectUrlWithParam).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+            return String.fromCharCode('0x' + p1);
+        }));
         const targetUrl = `https://auth.itinerary.eu.org/auth/?redirect=${base64Url}&name=${appName}`;
         window.location.href = targetUrl;
     });
@@ -357,21 +365,26 @@
         }
     });
 
+    // 🛠️ 管理画面（バグ修正：余計なスパンを排除し共通化）
     function showLoggedIn(username) {
         loggedInZone.classList.remove('hidden');
-        usernameDisplay.innerText = username;
+        
+        pageOwnerDisplay.innerText = `@${username} の管理画面`;
+        pageOwnerDisplay.classList.remove('hidden');
+        
         myBoxUrlSpan.innerText = `${MY_SITE_URL}?id=${username}`;
         
-        loadAndShowBadgeImage(username); // 管理画面でも自分のタイトルの下に画像を表示
+        loadAndShowBadgeImage(username);
         renderOdai(username);
     }
 
+    // お題送信画面
     function showSendPage(ownerName) {
         pageOwnerDisplay.innerText = `@${ownerName} のお題箱`;
         pageOwnerDisplay.classList.remove('hidden');
         sendZone.classList.remove('hidden');
         
-        loadAndShowBadgeImage(ownerName); // 相手のお題箱タイトルの真下に画像をロードして表示
+        loadAndShowBadgeImage(ownerName);
     }
 
     async function renderOdai(username) {
