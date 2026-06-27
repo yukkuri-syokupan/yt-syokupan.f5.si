@@ -3,117 +3,444 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scratch Auth 完全移植版</title>
+    <title>Scrabako — 匿名お題箱</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f4f8; margin: 0; }
-        .login-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; width: 340px; }
-        button { background: #4d97ff; color: white; border: none; padding: 12px 20px; border-radius: 4px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 15px; }
-        button:hover { background: #3373cc; }
-        .status { margin-top: 15px; font-size: 14px; color: #555; word-break: break-all; }
-        .hidden { display: none; }
+        :root {
+            --bg-color: #0a0a0a; /* ソリッドな漆黒 */
+            --card-bg: #141414; /* 深いグレー */
+            --text-color: #ffffff; /* 純白 */
+            --sub-text-color: #888888; 
+            --border-color: #222222;
+            --accent-glow: #00ffcc; /* サイバー感のあるネオン（隠し味） */
+            
+            --radius-lg: 16px;
+            --radius-md: 8px;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-color); 
+            color: var(--text-color);
+            margin: 0; 
+            padding: 0;
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+            box-sizing: border-box;
+            letter-spacing: 0.08em;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 700px; 
+            padding: 60px 20px; 
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 { 
+            font-size: 42px; 
+            font-weight: 900;
+            margin: 0 0 10px 0;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #fff 60%, var(--sub-text-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { 
+            font-size: 13px; 
+            color: var(--sub-text-color); 
+            margin: 0;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+        
+        /* 共通のボタンデザイン */
+        button { 
+            background: var(--text-color); 
+            color: var(--bg-color); 
+            border: 1px solid var(--text-color); 
+            padding: 14px 32px; 
+            border-radius: var(--radius-md); 
+            font-size: 15px; 
+            font-weight: 700;
+            cursor: pointer; 
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+            letter-spacing: 0.1em;
+        }
+
+        button:hover { 
+            background: var(--bg-color);
+            color: var(--text-color);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        button.outline {
+            background: transparent;
+            color: var(--sub-text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        button.outline:hover {
+            border-color: #fff;
+            color: #fff;
+            box-shadow: none;
+        }
+        
+        /* トップページのコンテンツ（面白みを強化） */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 11fr);
+            gap: 15px;
+            margin: 40px 0;
+            text-align: left;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--radius-md);
+        }
+
+        .feature-card num {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--sub-text-color);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .feature-card h3 { margin: 0 0 5px 0; font-size: 14px; }
+        .feature-card p { margin: 0; font-size: 11px; color: var(--sub-text-color); line-height: 1.5; }
+
+        /* インタラクティブな体験エリア */
+        .interactive-preview {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .preview-badge {
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: #222;
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            color: var(--sub-text-color);
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            resize: none;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+            background: #0d0d0d;
+            color: #fff;
+        }
+
+        textarea:focus { 
+            border-color: #fff; 
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+
+        .counter-zone {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--sub-text-color);
+            margin-bottom: 15px;
+        }
+        
+        .status { 
+            margin-top: 20px; 
+            font-size: 13px; 
+            color: var(--accent-glow); 
+            text-align: center;
+            min-height: 1.5em;
+            font-family: monospace;
+        }
+
+        .hidden { display: none !important; }
+        
+        /* お題リスト（スタイリッシュなカード型） */
+        .odai-list-section {
+            margin-top: 60px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 40px;
+        }
+
+        .odai-list-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 25px;
+        }
+
+        .odai-item { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            margin-bottom: 15px; 
+            font-size: 15px;
+            line-height: 1.7;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            position: relative;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .odai-item:hover {
+            border-color: #444;
+            transform: translateX(5px);
+        }
+
+        /* マイページのユーザー情報エリア */
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .user-badge { 
+            font-size: 18px; 
+            font-weight: 700;
+            font-family: monospace;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .pulse { animation: pulse 2s infinite; }
+
     </style>
 </head>
 <body>
 
-<div class="login-card">
-    <h2>Scratch Auth ログイン</h2>
-    
-    <div id="logged-out-zone">
-        <p>Scratchアカウントでログインします。</p>
-        <button id="login-btn">Scratchでログイン</button>
-    </div>
+<div class="main-wrapper">
+    <header>
+        <h1>Scrabako</h1>
+        <p class="subtitle">// Anonymous Box for Scratchers</p>
+    </header>
+        
+    <div class="content-zone">
+        
+        <div id="logged-out-zone">
+            <div class="interactive-preview">
+                <span class="preview-badge">Sandbox / お題箱の体験</span>
+                <textarea id="preview-input" placeholder="ここに入力した文字が、下でリアルタイムに文字数カウントされます。自由に触ってみてください。"></textarea>
+                <div class="counter-zone">
+                    <span>STATUS: READY</span>
+                    <span><span id="char-count">0</span> / 200 文字</span>
+                </div>
+                <button id="preview-send-btn" style="width: 100%;">検証用ダミー送信</button>
+            </div>
 
-    <div id="logged-in-zone" class="hidden">
-        <p>ようこそ、<strong id="username-display"></strong> さん！</p>
-        <button id="logout-btn" style="background: #ff4d4d;">ログアウト</button>
-    </div>
+            <div style="text-align: center; margin: 40px 0;">
+                <p style="font-size: 16px; color: var(--sub-text-color); margin-bottom: 20px;">あなたのScratchアカウントと瞬時に同期します。</p>
+                <button id="login-btn">Scratchでログイン</button>
+            </div>
 
-    <div id="status" class="status"></div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <num>01</num>
+                    <h3>安全な認証</h3>
+                    <p>公式コメントを利用したパスワード不要の認証システム。</p>
+                </div>
+                <div class="feature-card">
+                    <num>02</num>
+                    <h3>完全な匿名</h3>
+                    <p>送信者のデータは暗号化すらされず、最初から保存しません。</p>
+                </div>
+                <div class="feature-card">
+                    <num>03</num>
+                    <h3>美しき静寂</h3>
+                    <p>ノイズを極限まで削ぎ落とした、言葉に集中するための場所。</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="logged-in-zone" class="hidden">
+            <div class="user-info">
+                <span class="user-badge">&gt; <span id="username-display"></span></span>
+                <button id="logout-btn" class="outline">LOGOUT</button>
+            </div>
+            
+            <div class="interactive-preview">
+                <span class="preview-badge" style="color: var(--accent-glow);">箱は稼働中です</span>
+                <textarea id="odai-input" placeholder="匿名でメッセージを送信（自分の箱へのテスト投稿になります）"></textarea>
+                <div class="counter-zone">
+                    <span class="pulse" style="color: var(--accent-glow);">● ONLINE</span>
+                    <span><span id="main-char-count">0</span> / 200 文字</span>
+                </div>
+                <button id="send-btn" style="width: 100%;">お題を投げ込む</button>
+            </div>
+
+            <div id="odai-list-section" class="odai-list-section hidden">
+                <h3 class="odai-list-title">INBOX</h3>
+                <div id="odai-list">
+                    </div>
+            </div>
+        </div>
+
+        <div id="status" class="status"></div>
+    </div>
 </div>
 
 <script>
-    // 【最重要】あなたがブラウザで今開いているURL（ローカルサーバー）に書き換えてください
     const MY_SITE_URL = 'https://yt-syokupan.f5.si/scratch.html'; 
 
-    // Pythonの def base64(string) と同じ処理
     const base64Url = btoa(encodeURIComponent(MY_SITE_URL).replace(/%([0-9A-F]{2})/g, (match, p1) => {
         return String.fromCharCode('0x' + p1);
     }));
 
+    // 要素の取得
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
+    const sendBtn = document.getElementById('send-btn');
+    const odaiInput = document.getElementById('odai-input');
+    const previewInput = document.getElementById('preview-input');
+    const charCount = document.getElementById('char-count');
+    const mainCharCount = document.getElementById('main-char-count');
+    const previewSendBtn = document.getElementById('preview-send-btn');
+    const odaiListDiv = document.getElementById('odai-list');
+    const odaiListSection = document.getElementById('odai-list-section');
     const statusDiv = document.getElementById('status');
     const loggedOutZone = document.getElementById('logged-out-zone');
     const loggedInZone = document.getElementById('logged-in-zone');
     const usernameDisplay = document.getElementById('username-display');
 
-    // 1. ログインボタン押下時 (Pythonの /auth で未ログイン時の挙動)
+    // リアルタイム文字数カウンターの処理
+    previewInput.addEventListener('input', () => {
+        charCount.innerText = previewInput.value.length;
+    });
+    if(odaiInput) {
+        odaiInput.addEventListener('input', () => {
+            mainCharCount.innerText = odaiInput.value.length;
+        });
+    }
+
+    // ダミー送信ボタンの遊び要素
+    previewSendBtn.addEventListener('click', () => {
+        if(!previewInput.value.trim()) return;
+        statusDiv.innerText = ">> SANDBOX_MODE: 送信のシミュレートに成功しました（ログイン後に実際に保存されます）";
+        previewInput.value = "";
+        charCount.innerText = 0;
+        setTimeout(() => { statusDiv.innerText = ""; }, 4000);
+    });
+
+    // ログイン処理
     loginBtn.addEventListener('click', () => {
-        statusDiv.innerText = 'Scratch Auth へ移動します...';
-        
-        // 提示してくれたPythonコードのURL生成をそのままJavaScriptに翻訳
-        const appName = encodeURIComponent("ScratchAuth Example");
+        statusDiv.innerText = '>> REDIRECTING TO SCRATCH AUTH...';
+        const appName = encodeURIComponent("Scrabako");
         const targetUrl = `https://auth.itinerary.eu.org/auth/?redirect=${base64Url}&name=${appName}`;
-        
-        // Scratch Authの公式画面へ直接ジャンプ
         window.location.href = targetUrl;
     });
 
-    // 2. ページ読み込み時の処理 (Pythonの /authenticate と /auth の常時チェックに相当)
+    // 認証チェック
     window.addEventListener('DOMContentLoaded', async () => {
-        // すでにセッション（localStorage）に保存されているか確認
         const savedUser = localStorage.getItem('scratch_username');
         if (savedUser) {
             showLoggedIn(savedUser);
             return;
         }
 
-        // URLの ?privateCode=xxx を取得
         const urlParams = new URLSearchParams(window.location.search);
         const privateCode = urlParams.get('privateCode');
 
         if (privateCode) {
-            statusDiv.innerText = 'アカウントを検証中...';
+            statusDiv.innerText = '>> VERIFYING ACCOUNT...';
             try {
-                // Pythonの get(f"https://.../verifyToken?privateCode={code}") を再現
-                // ※渡された仕様書に合わせ、新しいAPIエンドポイントの構造で叩きます
                 const verifyUrl = `https://auth-api.itinerary.eu.org/auth/verifyToken/${privateCode}?method=comment&redirect=${encodeURIComponent(base64Url)}`;
-                
                 const response = await fetch(verifyUrl);
                 const data = await response.json();
 
-                console.log("検証レスポンス:", data);
-
                 if (data.valid && data.username) {
-                    // 認証成功！セッションに保存
                     localStorage.setItem('scratch_username', data.username);
-                    
-                    // URLをすっきりさせてログイン状態を表示
                     window.history.replaceState({}, document.title, window.location.pathname);
                     showLoggedIn(data.username);
                 } else {
-                    statusDiv.innerText = '認証に失敗しました。';
+                    statusDiv.innerText = '>> ERROR: AUTHENTICATION FAILED.';
                 }
             } catch (error) {
                 console.error(error);
-                statusDiv.innerText = '通信エラーが発生しました。';
+                statusDiv.innerText = '>> ERROR: CONNECTION FAILED.';
             }
         }
     });
 
-    // 3. ログアウト
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('scratch_username');
         window.location.href = window.location.pathname;
     });
 
+    sendBtn.addEventListener('click', () => {
+        const text = odaiInput.value.trim();
+        if (!text) return;
+
+        let savedOdai = JSON.parse(localStorage.getItem('scrabako_odai') || '[]');
+        savedOdai.unshift(text); 
+        localStorage.setItem('scrabako_odai', JSON.stringify(savedOdai));
+
+        odaiInput.value = '';
+        mainCharCount.innerText = 0;
+        statusDiv.innerText = '>> SUCCESS: MESSAGE SENT ANONYMOUSLY.';
+        setTimeout(() => { statusDiv.innerText = ''; }, 3000);
+        
+        renderOdai();
+    });
+
     function showLoggedIn(username) {
         loggedOutZone.classList.add('hidden');
         loggedInZone.classList.remove('hidden');
-        usernameDisplay.innerText = username;
-        statusDiv.innerText = 'ログイン完了！';
+        usernameDisplay.innerText = username.toUpperCase();
+        statusDiv.innerText = '';
+        renderOdai();
+    }
+
+    function renderOdai() {
+        odaiListDiv.innerHTML = '';
+        const savedOdai = JSON.parse(localStorage.getItem('scrabako_odai') || '[]');
+        
+        if (savedOdai.length === 0) {
+            odaiListSection.classList.add('hidden');
+            return;
+        }
+
+        odaiListSection.classList.remove('hidden');
+        savedOdai.forEach(odai => {
+            const div = document.createElement('div');
+            div.className = 'odai-item';
+            div.innerText = odai;
+            odaiListDiv.appendChild(div);
+        });
     }
 </script>
-
 </body>
 </html>
