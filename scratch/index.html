@@ -40,21 +40,20 @@
             letter-spacing: 0.05em;
         }
 
-        /* 👑 タイトルのスタイル */
         .page-owner {
             font-size: 16px;
             font-weight: 700;
             color: var(--text-color);
-            margin-bottom: 15px;
+            margin-bottom: 10px; /* 画像との隙間を程よく */
             text-align: center;
         }
 
-        /* 🖼️ タイトルの真下に表示されるカスタム画像（サイズ固定・中央寄せ） */
+        /* 🖼️ カスタムバッチ画像を適切なサイズ（24px）に修正 */
         .custom-badge-block {
-            width: 60px;
-            height: 60px;
+            width: 24px;
+            height: 24px;
             object-fit: contain;
-            margin: 0 auto 30px auto;
+            margin: 0 auto 25px auto; /* 下の入力欄との隙間 */
             display: block;
         }
 
@@ -119,7 +118,6 @@
         .hidden { display: none !important; }
         .hp-trap { position: absolute; overflow: hidden; clip: rect(0 0 0 0); height: 1px; width: 1px; margin: -1px; padding: 0; border: 0; }
         
-        /* 🛠️ 管理画面用のヘッダー幅微調整 */
         .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--text-color); }
         .user-name { font-size: 18px; font-weight: 700; width: 100%; text-align: center; }
         .inbox-title { text-align: left; font-size: 14px; font-weight: 700; margin: 40px 0 15px 0; text-transform: uppercase; }
@@ -136,7 +134,6 @@
     <h1>Scrabako</h1>
     
     <div id="page-owner-display" class="page-owner hidden"></div>
-    
     <img id="custom-badge-display" class="custom-badge-block hidden" src="" alt="Badge">
         
     <div id="logged-out-zone" class="hidden">
@@ -179,7 +176,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getDatabase, ref, push, get, child, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
     
-    // 🚨 JSファイルの読込を確実にするためモジュール内で一番に処理
     import { BADGE_CONFIG } from "./badge-config.js";
 
     const firebaseConfig = {
@@ -195,7 +191,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const MY_SITE_URL = 'https://yt-syokupan.f5.si/scratch.html'; 
+    // 🔗 現在のURL環境（末尾スラッシュでも対応可）を自動取得
+    const MY_SITE_URL = window.location.origin + window.location.pathname; 
 
     const urlParams = new URLSearchParams(window.location.search);
     const targetBoxId = urlParams.get('id'); 
@@ -218,7 +215,6 @@
     const myBoxUrlSpan = document.getElementById('my-box-url');
     const customBadgeDisplay = document.getElementById('custom-badge-display');
 
-    // 🖼️ 確実に画像を読み込んで表示する修正版ロジック
     function loadAndShowBadgeImage(username) {
         if (!username) return;
         const lowerName = username.toLowerCase();
@@ -273,7 +269,7 @@
     window.addEventListener('DOMContentLoaded', async () => {
         const savedUser = localStorage.getItem('scratch_username');
 
-        // ログイン処理のためのリダイレクト生成
+        // 動的な環境に合わせた認証用Base64URLの生成
         const redirectUrlWithParam = privateCode ? MY_SITE_URL : window.location.href;
         const base64Url = btoa(encodeURIComponent(redirectUrlWithParam).replace(/%([0-9A-F]{2})/g, (match, p1) => {
             return String.fromCharCode('0x' + p1);
@@ -318,7 +314,6 @@
     loginBtn.addEventListener('click', () => {
         statusDiv.innerText = '接続中...';
         const appName = encodeURIComponent("Scrabako");
-        // ログインボタン用のベースURL作成
         const redirectUrlWithParam = window.location.href;
         const base64Url = btoa(encodeURIComponent(redirectUrlWithParam).replace(/%([0-9A-F]{2})/g, (match, p1) => {
             return String.fromCharCode('0x' + p1);
@@ -365,7 +360,6 @@
         }
     });
 
-    // 🛠️ 管理画面（バグ修正：余計なスパンを排除し共通化）
     function showLoggedIn(username) {
         loggedInZone.classList.remove('hidden');
         
@@ -378,7 +372,6 @@
         renderOdai(username);
     }
 
-    // お題送信画面
     function showSendPage(ownerName) {
         pageOwnerDisplay.innerText = `@${ownerName} のお題箱`;
         pageOwnerDisplay.classList.remove('hidden');
