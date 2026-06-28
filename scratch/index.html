@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scrabako</title>
+    <title>URL移行のお知らせ</title>
     <style>
         :root {
             --bg-color: #ffffff;
@@ -11,6 +11,7 @@
             --sub-color: #777777;
             --border-color: #e5e5e5;
             --card-bg: #fafafa;
+            --accent-color: #007aff;
         }
 
         body { 
@@ -28,7 +29,7 @@
 
         .container {
             width: 100%;
-            max-width: 480px; 
+            max-width: 520px; 
             padding: 40px 20px;
             box-sizing: border-box;
             text-align: center;
@@ -41,127 +42,110 @@
             letter-spacing: 0.05em;
         }
 
-        .page-owner {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 10px;
-            text-align: center;
+        .subtitle {
+            font-size: 14px;
+            color: var(--sub-color);
+            margin-bottom: 30px;
         }
 
-        /* 🖼️ 送信画面でタイトルの真下に表示されるバッチ画像 */
-        .custom-badge-block {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-            margin: 0 auto 25px auto;
+        /* 📦 移行案内カード */
+        .notice-card {
+            background: #fff5f5;
+            border: 1px solid #ffcccb;
+            padding: 25px 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+        .notice-card h2 {
+            font-size: 18px;
+            color: #ff4757;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .notice-card p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0 0 15px 0;
+        }
+        
+        /* 🔗 新URLへのリンクボタン */
+        .move-btn {
+            display: block;
+            background: var(--text-color);
+            color: var(--bg-color);
+            text-decoration: none;
+            text-align: center;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .move-btn:hover { opacity: 0.8; }
+
+        .countdown {
+            font-size: 12px;
+            color: var(--sub-color);
+            text-align: center;
+            margin-top: 10px;
             display: block;
         }
 
-        button { 
-            background: var(--text-color); 
-            color: var(--bg-color); 
-            border: 1px solid var(--text-color); 
-            padding: 14px 28px; 
-            border-radius: 6px; 
-            font-size: 14px; 
-            font-weight: 600;
-            cursor: pointer; 
-            transition: opacity 0.2s ease;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        button:hover { opacity: 0.8; }
-        button:disabled { background: #cccccc; border-color: #cccccc; color: #666666; cursor: not-allowed; opacity: 1; }
-
-        /* ⚙️ 設定用カード内のスタイリッシュなアウトラインボタン */
-        button.outline {
-            background: transparent;
-            color: #ff4757; /* ログアウトは少し警告色寄りに */
-            border: 1px solid #ffcccb;
-            width: auto;
-            padding: 8px 16px;
-            font-size: 12px;
-            border-radius: 4px;
-        }
-        button.outline:hover { background: #fff5f5; border-color: #ff4757; opacity: 1; }
-        
-        .name-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 14px;
-            outline: none;
-            margin-bottom: 10px;
-            background: var(--bg-color);
-            color: var(--text-color);
-        }
-        .name-input:focus { border-color: var(--text-color); }
-
-        textarea {
-            width: 100%;
-            height: 140px;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            resize: none;
-            box-sizing: border-box;
-            font-size: 15px;
-            outline: none;
-            margin-bottom: 15px;
-            background: var(--bg-color);
-            color: var(--text-color);
-        }
-        textarea:focus { border-color: var(--text-color); }
-
-        .notice { font-size: 12px; color: var(--sub-color); margin-top: 30px; line-height: 1.5; }
-        .status { margin-top: 20px; font-size: 13px; color: var(--text-color); min-height: 1.5em; }
-        .hidden { display: none !important; }
-        .hp-trap { position: absolute; overflow: hidden; clip: rect(0 0 0 0); height: 1px; width: 1px; margin: -1px; padding: 0; border: 0; }
-        
-        .inbox-title { text-align: left; font-size: 14px; font-weight: 700; margin: 40px 0 15px 0; text-transform: uppercase; }
-        
-        .odai-item { text-align: left; padding: 20px 0; font-size: 15px; line-height: 1.6; border-bottom: 1px solid var(--border-color); }
-        .odai-sender { font-size: 11px; color: var(--sub-color); margin-bottom: 6px; font-weight: 600; }
-        
-        /* 📦 共有URLとアカウント設定用の共通カード枠 */
-        .info-card { 
-            background: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 8px; 
-            font-size: 13px; 
-            border: 1px solid var(--border-color); 
-            margin-top: 20px; 
-            text-align: left; 
-        }
-        .info-card strong { font-size: 14px; color: var(--text-color); display: block; margin-bottom: 8px; }
-        .info-card p { margin: 0 0 15px 0; color: var(--sub-color); font-size: 12px; line-height: 1.4; }
-
-        /* 🔧 設定項目を綺麗に横並びにするレイアウト */
-        .settings-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-top: 15px;
+        hr {
+            border: 0;
             border-top: 1px solid var(--border-color);
+            margin: 40px 0;
         }
-        .badge-preview-area {
+
+        /* 📖 トリセツエリア */
+        .guide-section {
+            text-align: left;
+        }
+        .guide-section h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--text-color);
+            padding-left: 10px;
+        }
+
+        .step-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .step-card h3 {
+            font-size: 15px;
+            margin: 0 0 10px 0;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-weight: 600;
+            gap: 8px;
         }
-        .settings-badge-img {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
+        .step-number {
+            background: var(--text-color);
+            color: var(--bg-color);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
         }
-        .no-badge-text {
-            font-size: 12px;
-            color: var(--sub-color);
-            font-weight: normal;
+        .step-card p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+        }
+        .step-card ul {
+            margin: 8px 0 0 0;
+            padding-left: 20px;
+            font-size: 13px;
+            color: #555;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -169,309 +153,58 @@
 
 <div class="container">
     <h1>Scrabako</h1>
-    
-    <div id="page-owner-display" class="page-owner hidden"></div>
-    <img id="custom-badge-display" class="custom-badge-block hidden" src="" alt="Badge">
+    <div class="subtitle">Scratchアカウントで使えるシンプルお題箱</div>
+
+    <div class="notice-card">
+        <h2>🚀 URLを移行しました！</h2>
+        <p>
+            より快適にご利用いただくため、ScrabakoのシステムURLを変更いたしました。<br>
+            ブックマーク等に登録されている場合は、お手数ですが新URLへの変更をお願いします。
+        </p>
+        <a href="https://yt-syokupan.f5.si/scratch/" id="new-url-link" class="move-btn">新サイトへ移動する</a>
+    </div>
+
+    <hr>
+
+    <div class="guide-section">
+        <h2>📖 Scrabakoの使い方</h2>
         
-    <div id="logged-out-zone" class="hidden">
-        <button id="login-btn">Scratchでログインしてお題箱を作る</button>
-        <p class="notice">ログインすると、あなた専用のお題箱URLが作成されます。</p>
-    </div>
-
-    <div id="send-zone" class="hidden">
-        <div class="hp-trap">
-            <label>Leave this field blank</label>
-            <input type="text" id="hp-email-field" autocomplete="off">
+        <div class="step-card">
+            <h3><span class="step-number">STEP 1</span>自分専用のお題箱を作る</h3>
+            <p>
+                新サイトのトップ画面にある「Scratchでログインしてお題箱を作る」ボタンを押して認証を完了させるだけで、あなた専用のお題箱がその場で自動生成されます。
+            </p>
         </div>
 
-        <input type="text" id="sender-name-input" class="name-input" placeholder="ニックネーム（空欄なら匿名さん）" maxlength="20">
-        <textarea id="odai-input" placeholder="メッセージを入力..."></textarea>
-        <button id="send-btn">メッセージを送信</button>
-        <p class="notice">このメッセージは相手に届きます。<br><a href="?" style="color: inherit;">自分のお題箱を作る</a></p>
-    </div>
-
-    <div id="logged-in-zone" class="hidden">
-        
-        <div class="info-card" style="word-break: break-all;">
-            <strong>🔗 あなたのお題箱URL:</strong>
-            <span id="my-box-url" style="color: #555;"></span>
+        <div class="step-card">
+            <h3><span class="step-number">STEP 2</span>URLをシェアしてメッセージを募集</h3>
+            <p>
+                管理画面に表示される「あなたのお題箱URL」をコピーして、プロフィールや作品説明欄、各種SNSに貼り付けましょう！ログインしていない匿名ユーザーからもメッセージを受け取ることができます。
+            </p>
         </div>
 
-        <div class="info-card">
-            <strong>⚙️ アカウント設定</strong>
-            <p>現在のバッチ情報確認や、アカウントのログアウトが行えます。</p>
-            
-            <div class="settings-row">
-                <div class="badge-preview-area">
-                    <span>現在のバッチ:</span>
-                    <span id="settings-badge-container"></span>
-                </div>
-                <button id="logout-btn" class="outline">ログアウト</button>
-            </div>
-        </div>
-
-        <div id="odai-list-section" class="hidden">
-            <div class="inbox-title">Inbox (受信箱)</div>
-            <div id="odai-list"></div>
+        <div class="step-card">
+            <h3><span class="step-number">STEP 3</span>新機能：カスタムバッチの設定</h3>
+            <p>
+                運営や公認アカウント向けに特別なバッチ（アイコン画像）が表示される機能が追加されました！
+            </p>
+            <ul>
+                <li><strong>表示の切り替え:</strong> 管理画面の「⚙️ アカウント設定」から、他人の画面に自分のバッチを表示するかどうか、チェックボックスでいつでもオン/オフを切り替えられます。</li>
+                <li>バッチが割り当てられているユーザーは、設定カード内で現在のデザインのプレビューを確認可能です。</li>
+            </ul>
         </div>
     </div>
-
-    <div id="status" class="status"></div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-    import { getDatabase, ref, push, get, child, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
-    
-    import { BADGE_CONFIG } from "./badge-config.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAtEnMVm4Zwgo60dnwC_PtU-JmOvBheH9g",
-        authDomain: "scrabako.firebaseapp.com",
-        projectId: "scrabako",
-        storageBucket: "scrabako.firebasestorage.app",
-        messagingSenderId: "733907569048",
-        appId: "1:733907569048:web:94b756e8dd8ea572dec3ed",
-        databaseURL: "https://scrabako-default-rtdb.firebaseio.com/" 
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const MY_SITE_URL = window.location.origin + window.location.pathname; 
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetBoxId = urlParams.get('id'); 
-    const privateCode = urlParams.get('privateCode'); 
-
-    const loginBtn = document.getElementById('login-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const sendBtn = document.getElementById('send-btn');
-    const odaiInput = document.getElementById('odai-input');
-    const senderNameInput = document.getElementById('sender-name-input');
-    const hpEmailField = document.getElementById('hp-email-field');
-    const odaiListDiv = document.getElementById('odai-list');
-    const odaiListSection = document.getElementById('odai-list-section');
-    const statusDiv = document.getElementById('status');
-    
-    const loggedOutZone = document.getElementById('logged-out-zone');
-    const sendZone = document.getElementById('send-zone');
-    const loggedInZone = document.getElementById('logged-in-zone');
-    const pageOwnerDisplay = document.getElementById('page-owner-display');
-    const myBoxUrlSpan = document.getElementById('my-box-url');
-    const customBadgeDisplay = document.getElementById('custom-badge-display');
-    const settingsBadgeContainer = document.getElementById('settings-badge-container');
-
-    // 🖼️ ユーザーのカスタム画像URLを引っ張ってくる共通ロジック
-    function getBadgeUrl(username) {
-        if (!username) return "";
-        const lowerName = username.toLowerCase();
-
-        const adminKey = Object.keys(BADGE_CONFIG.admins || {}).find(k => k.toLowerCase() === lowerName);
-        if (adminKey && BADGE_CONFIG.admins[adminKey]) {
-            return BADGE_CONFIG.admins[adminKey];
+<script>
+    const countdownInterval = setInterval(() => {
+        count--;
+        timerElement.innerText = count;
+        if (count <= 0) {
+            clearInterval(countdownInterval);
+            window.location.href = targetUrl;
         }
-
-        const verifiedKey = Object.keys(BADGE_CONFIG.verified || {}).find(k => k.toLowerCase() === lowerName);
-        if (verifiedKey && BADGE_CONFIG.verified[verifiedKey]) {
-            return BADGE_CONFIG.verified[verifiedKey];
-        }
-
-        return "";
-    }
-
-    function checkCooldown() {
-        if (!targetBoxId) return;
-        const lastSent = localStorage.getItem(`last_sent_${targetBoxId.toLowerCase()}`);
-        if (lastSent) {
-            const timeLeft = Math.ceil((parseInt(lastSent) + 30000 - Date.now()) / 1000);
-            if (timeLeft > 0) {
-                startCooldownTimer(timeLeft);
-            }
-        }
-    }
-
-    function startCooldownTimer(seconds) {
-        sendBtn.disabled = true;
-        let currentSeconds = seconds;
-        
-        const interval = setInterval(() => {
-            currentSeconds--;
-            if (currentSeconds <= 0) {
-                clearInterval(interval);
-                sendBtn.disabled = false;
-                sendBtn.innerText = "メッセージを送信";
-            } else {
-                sendBtn.innerText = `連続送信不可 (残り ${currentSeconds}秒...)`;
-            }
-        }, 1000);
-    }
-
-    window.addEventListener('DOMContentLoaded', async () => {
-        const savedUser = localStorage.getItem('scratch_username');
-
-        const redirectUrlWithParam = privateCode ? MY_SITE_URL : window.location.href;
-        const base64Url = btoa(encodeURIComponent(redirectUrlWithParam).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-            return String.fromCharCode('0x' + p1);
-        }));
-
-        if (privateCode) {
-            statusDiv.innerText = 'アカウント検証中...';
-            try {
-                const verifyUrl = `https://auth-api.itinerary.eu.org/auth/verifyToken/${privateCode}?method=comment&redirect=${encodeURIComponent(base64Url)}`;
-                const response = await fetch(verifyUrl);
-                const data = await response.json();
-
-                if (data.valid && data.username) {
-                    localStorage.setItem('scratch_username', data.username);
-                    window.location.href = `?id=${data.username}`;
-                } else {
-                    statusDiv.innerText = '認証に失敗しました。';
-                }
-            } catch (error) {
-                console.error(error);
-                statusDiv.innerText = '通信エラーが発生しました。';
-            }
-            return;
-        }
-
-        if (targetBoxId) {
-            if (savedUser && savedUser.toLowerCase() === targetBoxId.toLowerCase()) {
-                showLoggedIn(savedUser);
-            } else {
-                showSendPage(targetBoxId);
-                checkCooldown();
-            }
-        } else {
-            if (savedUser) {
-                window.location.href = `?id=${savedUser}`;
-            } else {
-                loggedOutZone.classList.remove('hidden');
-            }
-        }
-    });
-
-    loginBtn.addEventListener('click', () => {
-        statusDiv.innerText = '接続中...';
-        const appName = encodeURIComponent("Scrabako");
-        const redirectUrlWithParam = window.location.href;
-        const base64Url = btoa(encodeURIComponent(redirectUrlWithParam).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-            return String.fromCharCode('0x' + p1);
-        }));
-        const targetUrl = `https://auth.itinerary.eu.org/auth/?redirect=${base64Url}&name=${appName}`;
-        window.location.href = targetUrl;
-    });
-
-    logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('scratch_username');
-        window.location.href = '?';
-    });
-
-    sendBtn.addEventListener('click', async () => {
-        const text = odaiInput.value.trim();
-        if (!text) return;
-
-        if (hpEmailField.value) {
-            odaiInput.value = '';
-            statusDiv.innerText = `@${targetBoxId} さんにお題を送信しました`;
-            return;
-        }
-
-        const senderName = senderNameInput.value.trim() || "匿名さん";
-
-        try {
-            const dbRef = ref(db, `odais/${targetBoxId.toLowerCase()}`);
-            await push(dbRef, {
-                sender: senderName,
-                content: text,
-                createdAt: serverTimestamp()
-            });
-
-            localStorage.setItem(`last_sent_${targetBoxId.toLowerCase()}`, Date.now().toString());
-            startCooldownTimer(30);
-
-            odaiInput.value = '';
-            senderNameInput.value = '';
-            statusDiv.innerText = `@${targetBoxId} さんにお題を送信しました`;
-            setTimeout(() => { if(!sendBtn.disabled) statusDiv.innerText = ''; }, 3000);
-        } catch (e) {
-            console.error(e);
-            statusDiv.innerText = '送信に失敗しました。';
-        }
-    });
-
-    // 🛠️ 新しい管理画面のレンダリング
-    function showLoggedIn(username) {
-        loggedInZone.classList.remove('hidden');
-        
-        pageOwnerDisplay.innerText = `@${username} の管理画面`;
-        pageOwnerDisplay.classList.remove('hidden');
-        
-        // 管理画面のトップにある邪魔な単体画像は非表示にする
-        customBadgeDisplay.classList.add('hidden');
-        
-        myBoxUrlSpan.innerText = `${MY_SITE_URL}?id=${username}`;
-        
-        // ⚙️ 設定カードの中にバッチプレビューを出力する
-        const badgeUrl = getBadgeUrl(username);
-        if (badgeUrl) {
-            settingsBadgeContainer.innerHTML = `<img src="${badgeUrl}" class="settings-badge-img" alt="Badge Preview">`;
-        } else {
-            settingsBadgeContainer.innerHTML = `<span class="no-badge-text">なし（一般ユーザー）</span>`;
-        }
-
-        renderOdai(username);
-    }
-
-    // お題送信画面
-    function showSendPage(ownerName) {
-        pageOwnerDisplay.innerText = `@${ownerName} のお題箱`;
-        pageOwnerDisplay.classList.remove('hidden');
-        sendZone.classList.remove('hidden');
-        
-        // 送信画面では、従来どおりタイトルの真下に画像を表示
-        const badgeUrl = getBadgeUrl(ownerName);
-        if (badgeUrl) {
-            customBadgeDisplay.src = badgeUrl;
-            customBadgeDisplay.classList.remove('hidden');
-        } else {
-            customBadgeDisplay.classList.add('hidden');
-        }
-    }
-
-    async function renderOdai(username) {
-        odaiListDiv.innerHTML = '';
-        const dbRef = ref(db);
-        
-        try {
-            const snapshot = await get(child(dbRef, `odais/${username.toLowerCase()}`));
-            if (snapshot.exists()) {
-                odaiListSection.classList.remove('hidden');
-                const data = snapshot.val();
-                const items = Object.values(data).reverse();
-                
-                items.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'odai-item';
-                    
-                    const senderDiv = document.createElement('div');
-                    senderDiv.className = 'odai-sender';
-                    senderDiv.innerText = `From: ${item.sender || '匿名さん'}`;
-                    
-                    const contentDiv = document.createElement('div');
-                    contentDiv.innerText = item.content;
-                    
-                    div.appendChild(senderDiv);
-                    div.appendChild(contentDiv);
-                    odaiListDiv.appendChild(div);
-                });
-            } else {
-                odaiListSection.classList.add('hidden');
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }
+    }, 1000);
 </script>
 </body>
 </html>
